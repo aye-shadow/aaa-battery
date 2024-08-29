@@ -1,3 +1,5 @@
+before running any of this, make sure you have node, jdk, and maven installed.
+
 to run the frontend:
 ```bash 
 cd frontend
