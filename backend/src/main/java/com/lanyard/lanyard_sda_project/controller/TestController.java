@@ -8,12 +8,12 @@ import java.util.HashMap;
 @RequestMapping("/test")
 public class TestController {
 
-    // @GetMapping("/test")
-    // public String sayHello() {
-    //     return "Hello, World!";
-    // }
+    @GetMapping("/get")
+    public String sayHello() {
+        return "Hello, World!";
+    }
 
-    @PostMapping
+    @PostMapping("/post")
     public Map<String, String> handlePostRequest(@RequestBody Map<String, String> payload) {
         String input = payload.get("input");
         // Process the input value
