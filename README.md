@@ -5,7 +5,7 @@ to run the frontend:
 cd frontend
 cp .env.example .env.local
 ```
-edit your newly created .env.local file with the required env variables
+edit your newly created .env.local file with the required env variables. then run:
 ```bash
 npm install
 npm run dev
