@@ -29,6 +29,6 @@ jobs:
         heroku_app_name: 'lanyard-spring-backend'
         heroku_email: 'i220899@nu.edu.pk'
         buildpack: 'https://github.com/timanovsky/subdir-heroku-buildpack.git, heroku/java'
-        branch: 'main'
+        branch: 'testing'
       env:
         PROJECT_PATH: 'backend'
