@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import axios from '../lib/axios';
+import axios from "../lib/axios";
 
 export default function Home() {
   const [inputValue, setInputValue] = useState("");
@@ -12,10 +12,10 @@ export default function Home() {
 
   const handleEnterClick = async () => {
     try {
-      const response = await axios.post("/test", {
-        input: inputValue
+      const response = await axios.post("/test/post", {
+        input: inputValue,
       });
-  
+
       console.log(response.data);
       setServerResponse(response.data.message);
     } catch (error) {
@@ -32,7 +32,9 @@ export default function Home() {
         className="border-2"
       />
       <br />
-      <button className='border-2' onClick={handleEnterClick}>Enter</button>
+      <button className="border-2" onClick={handleEnterClick}>
+        Enter
+      </button>
       <p>{serverResponse}</p>
     </>
   );

@@ -3,6 +3,10 @@ before running any of this, make sure you have node, jdk, and maven installed.
 to run the frontend:
 ```bash 
 cd frontend
+cp .env.example .env.local
+```
+edit your newly created .env.local file with the required env variables. then run:
+```bash
 npm install
 npm run dev
 ```
