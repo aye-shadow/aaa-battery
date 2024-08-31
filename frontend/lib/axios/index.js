@@ -1,7 +1,7 @@
 import axios from 'axios';
 // import {auth} from "@/features/lib/auth";
 
-const backendUrl = process.env.NODE_ENV === 'production' ? process.env.NEXT_PUBLIC_PROD_BACKEND_URL : process.env.NEXT_PUBLIC_DEV_BACKEND_URL;
+const backendUrl = process.env.NEXT_PUBLIC_PROD_BACKEND_URL;
 console.log('backendUrl:', backendUrl);
 
 const api = axios.create({
