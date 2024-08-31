@@ -2,7 +2,7 @@ import axios from 'axios';
 // import {auth} from "@/features/lib/auth";
 
 const api = axios.create({
-  baseURL: 'http://localhost:8080/', // This sets the base Spring Boot URL for all requests
+  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL, // This sets the base Spring Boot URL for all requests
   headers: {
     'Content-Type': 'application/json',
   },
