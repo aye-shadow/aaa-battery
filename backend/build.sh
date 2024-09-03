@@ -7,6 +7,8 @@ if [ -f .env ]; then
   set +o allexport
 fi
 
-# Run Maven clean package
-mvn clean package
-SPRING_PROFILES_ACTIVE=local java -jar target/lanyard-sda-project-0.0.1-SNAPSHOT.jar
+# Set the Spring profile
+export SPRING_PROFILES_ACTIVE=local
+
+# Run Maven spring-boot:run
+mvn spring-boot:run
