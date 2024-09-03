@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
-import axios from "../lib/axios";
+// import axios from "../lib/axios";
+import axios from "axios";
 
 export default function Home() {
   const [inputValue, setInputValue] = useState("");
@@ -12,7 +13,7 @@ export default function Home() {
 
   const handleEnterClick = async () => {
     try {
-      const response = await axios.post("/test/post", {
+      const response = await axios.post("/api/test/post", {
         input: inputValue,
       });
 
