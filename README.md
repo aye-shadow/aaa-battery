@@ -30,8 +30,7 @@ cp .env.example .env
 edit your newly created .env file with the required env variables. then run:
 
 ```bash:
-mvn clean
-mvn spring-boot:run
+./build.sh
 ```
 
 your backend calls will be routed to:
