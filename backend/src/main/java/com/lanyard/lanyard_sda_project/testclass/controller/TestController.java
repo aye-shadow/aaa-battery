@@ -1,12 +1,19 @@
-package com.lanyard.lanyard_sda_project.controller;
+package com.lanyard.lanyard_sda_project.testclass.controller;
 
+import com.lanyard.lanyard_sda_project.testclass.model.TestEntity;
+import com.lanyard.lanyard_sda_project.testclass.repository.TestRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import java.util.Map;
+
 import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/test")
 public class TestController {
+
+    @Autowired
+    private TestRepository inputDataRepository;
 
     @GetMapping("/get")
     public String sayHello() {
@@ -16,7 +23,11 @@ public class TestController {
     @PostMapping("/post")
     public Map<String, String> handlePostRequest(@RequestBody Map<String, String> payload) {
         String input = payload.get("input");
-        // Process the input value
+
+        // Save input to the database
+        TestEntity inputData = new TestEntity();
+        inputData.setInput(input);
+        inputDataRepository.save(inputData);
 
         // Create a response map
         Map<String, String> response = new HashMap<>();
