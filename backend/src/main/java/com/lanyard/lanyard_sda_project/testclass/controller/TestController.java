@@ -5,8 +5,9 @@ import com.lanyard.lanyard_sda_project.testclass.repository.TestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/test")
@@ -16,8 +17,8 @@ public class TestController {
     private TestRepository inputDataRepository;
 
     @GetMapping("/get")
-    public String sayHello() {
-        return "Hello, World!";
+    public List<TestEntity> getAllEntries() {
+        return inputDataRepository.findAll();
     }
 
     @PostMapping("/post")
