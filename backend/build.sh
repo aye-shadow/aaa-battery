@@ -8,5 +8,5 @@ if [ -f .env ]; then
 fi
 
 # Run Maven clean package
-mvn clean 
-mvn spring-boot:run
+mvn clean package
+SPRING_PROFILES_ACTIVE=local java -jar target/lanyard-sda-project-0.0.1-SNAPSHOT.jar
