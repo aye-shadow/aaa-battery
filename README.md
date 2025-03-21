@@ -1,4 +1,8 @@
-before running any of this, make sure you have node, jdk, and maven installed.
+before running any of this, make sure you have the following installed:
+
+- **Node.js**: version 22
+- **JDK**: version 17
+- **Maven**: version 3.9.9
 
 to run the frontend:
 
@@ -29,7 +33,7 @@ cp .env.example .env
 
 edit your newly created .env file with the required env variables. then run:
 
-```bash:
+```bash
 ./build.sh
 ```
 

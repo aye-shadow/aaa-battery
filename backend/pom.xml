@@ -8,11 +8,11 @@
 		<version>3.3.3</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.lanyard</groupId>
-	<artifactId>lanyard-sda-project</artifactId>
+	<groupId>com.aaa_battery</groupId>
+	<artifactId>aaa_batteryproject</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>lanyard-sda-project</name>
-	<description>Lanyard Project for SDA</description>
+	<name>aaa_batteryproject</name>
+	<description>AAA Battery Project for SDA</description>
 	<url/>
 	<licenses>
 		<license/>
