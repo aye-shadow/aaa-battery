@@ -16,6 +16,13 @@ public class UserController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
+
     @PostMapping("/register")
     public ResponseEntity<String> registerUser(@RequestBody UserEntity userEntity) {
         try {
@@ -45,6 +52,45 @@ public class UserController {
             }
         } catch (Exception e) {
             return new ResponseEntity<>("Error during login: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> authenticatedUser() {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+            if (authentication == null || !authentication.isAuthenticated()) {
+                return new ResponseEntity<>("Unauthorized", HttpStatus.UNAUTHORIZED);
+            }
+
+            // Assuming authentication principal returns UserEntity
+            UserEntity currentUser = (UserEntity) authentication.getPrincipal();
+
+            // Hide sensitive data before returning
+            UserEntity safeUser = new UserEntity();
+            safeUser.setId(currentUser.getId());
+            safeUser.setEmail(currentUser.getEmail());
+            safeUser.setUsername(currentUser.getUsername());
+
+            return ResponseEntity.ok(safeUser);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Error retrieving user info: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/")
+    public ResponseEntity<?> allUsers() {
+        try {
+            List<UserEntity> users = userRepository.findAll();
+
+            if (users.isEmpty()) {
+                return new ResponseEntity<>("No users found", HttpStatus.NOT_FOUND);
+            }
+
+            return ResponseEntity.ok(users);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Error retrieving users: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }
