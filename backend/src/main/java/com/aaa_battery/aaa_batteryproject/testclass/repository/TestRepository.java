@@ -1,6 +1,6 @@
-package com.lanyard.lanyard_sda_project.testclass.repository;
+package com.aaa_battery.aaa_batteryproject.testclass.repository;
 
-import com.lanyard.lanyard_sda_project.testclass.model.TestEntity;
+import com.aaa_battery.aaa_batteryproject.testclass.model.TestEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

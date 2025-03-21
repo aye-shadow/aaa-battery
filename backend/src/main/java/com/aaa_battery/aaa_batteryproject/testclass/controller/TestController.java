@@ -1,7 +1,7 @@
-package com.lanyard.lanyard_sda_project.testclass.controller;
+package com.aaa_battery.aaa_batteryproject.testclass.controller;
 
-import com.lanyard.lanyard_sda_project.testclass.model.TestEntity;
-import com.lanyard.lanyard_sda_project.testclass.repository.TestRepository;
+import com.aaa_battery.aaa_batteryproject.testclass.model.TestEntity;
+import com.aaa_battery.aaa_batteryproject.testclass.repository.TestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

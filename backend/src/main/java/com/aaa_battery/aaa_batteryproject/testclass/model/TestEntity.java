@@ -1,4 +1,4 @@
-package com.lanyard.lanyard_sda_project.testclass.model;
+package com.aaa_battery.aaa_batteryproject.testclass.model;
 
 import jakarta.persistence.*;
 
