@@ -35,7 +35,7 @@ jobs:
       uses: akhileshns/heroku-deploy@v3.12.12
       with:
         heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
-        heroku_app_name: 'lanyard-spring-backend'
+        heroku_app_name: 'aaa-battery-spring-backend'
         heroku_email: 'i220899@nu.edu.pk'
         buildpack: 'https://github.com/timanovsky/subdir-heroku-buildpack.git, heroku/java'
         branch: 'testing'

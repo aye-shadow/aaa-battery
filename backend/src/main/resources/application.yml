@@ -1,6 +1,6 @@
 spring:
   application:
-    name: lanyard-sda-project
+    name: AAA-Battery
   datasource:
     url: ${JDBC_DATABASE_URL}
     username: ${JDBC_DATABASE_USERNAME}
