@@ -1,4 +1,4 @@
-package com.aaa_battery.aaa_batteryproject.errorhandler;
+package com.aaa_battery.aaa_batteryproject.errorhandler.model;
 
 public class APIErrorResponse {
 

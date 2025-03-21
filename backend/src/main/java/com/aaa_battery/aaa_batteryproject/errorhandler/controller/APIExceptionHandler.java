@@ -1,4 +1,4 @@
-package com.aaa_battery.aaa_batteryproject.errorhandler;
+package com.aaa_battery.aaa_batteryproject.errorhandler.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -7,6 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.NoHandlerFoundException;
+
+import com.aaa_battery.aaa_batteryproject.errorhandler.model.APIErrorResponse;
 
 @ControllerAdvice
 public class APIExceptionHandler {
