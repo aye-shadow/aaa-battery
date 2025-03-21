@@ -1,0 +1,44 @@
+package com.aaa_battery.aaa_batteryproject.jwt.controller;
+
+import com.aaa_battery.aaa_batteryproject.user.model.UserEntity;
+import com.aaa_battery.aaa_batteryproject.jwt.services.AuthenticationService;
+import com.aaa_battery.aaa_batteryproject.jwt.services.JwtService;
+import com.aaa_battery.aaa_batteryproject.jwt.dtos.LoginUserDto;
+import com.aaa_battery.aaa_batteryproject.jwt.dtos.RegisterUserDto;
+import com.aaa_battery.aaa_batteryproject.jwt.responses.LoginResponse;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RequestMapping("/api/auth")
+@RestController
+public class AuthenticationController {
+    private final JwtService jwtService;
+    
+    private final AuthenticationService authenticationService;
+
+    public AuthenticationController(JwtService jwtService, AuthenticationService authenticationService) {
+        this.jwtService = jwtService;
+        this.authenticationService = authenticationService;
+    }
+
+    @PostMapping("/signup")
+    public ResponseEntity<UserEntity> register(@RequestBody RegisterUserDto registerUserDto) {
+        UserEntity registeredUser = authenticationService.signup(registerUserDto);
+
+        return ResponseEntity.ok(registeredUser);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> authenticate(@RequestBody LoginUserDto loginUserDto) {
+        UserEntity authenticatedUser = authenticationService.authenticate(loginUserDto);
+
+        String jwtToken = jwtService.generateToken(authenticatedUser);
+
+        LoginResponse loginResponse = new LoginResponse().setToken(jwtToken).setExpiresIn(jwtService.getExpirationTime());
+
+        return ResponseEntity.ok(loginResponse);
+    }
+}
