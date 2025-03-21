@@ -7,14 +7,22 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import io.github.cdimascio.dotenv.Dotenv;
 
 @SpringBootApplication
 @ComponentScan(basePackages = "com.aaa_battery.aaa_batteryproject")
-@EntityScan(basePackages = "com.aaa_battery.aaa_batteryproject.testclass.model")
-@EnableJpaRepositories(basePackages = "com.aaa_battery.aaa_batteryproject.testclass.repository")
+@EntityScan(basePackages = {
+    "com.aaa_battery.aaa_batteryproject.testclass.model",
+    "com.aaa_battery.aaa_batteryproject.user.model"
+})
+@EnableJpaRepositories(basePackages = {
+    "com.aaa_battery.aaa_batteryproject.testclass.repository",
+    "com.aaa_battery.aaa_batteryproject.user.repository"
+})
 @EnableWebMvc
 public class AAA_BatteryProjectApplication {
     public static void main(String[] args) {
@@ -32,5 +40,13 @@ public class AAA_BatteryProjectApplication {
                 System.setProperty("JDBC_DATABASE_PASSWORD", dotenv.get("JDBC_DATABASE_PASSWORD"));
             }
         };
+    }
+
+    @RestController
+    public class HomeResource {
+        @GetMapping("/")
+        public String home() {
+            return "<h1>Welcome</h1>";
+        }
     }
 }

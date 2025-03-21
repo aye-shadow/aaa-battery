@@ -1,28 +1,22 @@
-// package com.aaa_battery.aaa_batteryproject.security;
+package com.aaa_battery.aaa_batteryproject.security;
 
-// import org.springframework.context.annotation.Bean;
-// import org.springframework.context.annotation.Configuration;
-// import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-// import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-// import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.web.SecurityFilterChain;
 
-// @Configuration
-// @EnableWebSecurity
-// public class SecurityConfig {
-//     @Bean
-//     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-//         // return httpSecurity
-//         //         .formLogin(httpForm -> {
-//         //             httpForm
-//         //                 .loginPage(loginPage: "/login").permitAll();
-//         //         })
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+    @Bean
+    public SecurityFilterChain web(HttpSecurity http) throws Exception {
+        http
+            .csrf((csrf) -> csrf.disable())
+            .authorizeHttpRequests((authorize) -> authorize
+                .requestMatchers("/api/user/register").permitAll()
+            );
 
-//         //         .authorizeHttpRequests(registry -> {
-//         //             registry.requestMatchers(...patterns: "req/signup").permitAll();
-//         //             registry.anyRequest().authenticated();
-//         //         })
-                
-//         //         .build();
-//         return httpSecurity.build();
-//     }
-// }
+        return http.build();
+    }
+}

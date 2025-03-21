@@ -12,11 +12,10 @@ spring:
       password: password
   mvc:
     throw-exceptions-if-no-handler-found: true
-
-jpa:
-  database-platform: org.hibernate.dialect.PostgreSQLDialect
-  hibernate:
-    ddl-auto: update
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
 
 server:
   error:
