@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import io.github.cdimascio.dotenv.Dotenv;
 
@@ -14,6 +15,7 @@ import io.github.cdimascio.dotenv.Dotenv;
 @ComponentScan(basePackages = "com.aaa_battery.aaa_batteryproject")
 @EntityScan(basePackages = "com.aaa_battery.aaa_batteryproject.testclass.model")
 @EnableJpaRepositories(basePackages = "com.aaa_battery.aaa_batteryproject.testclass.repository")
+@EnableWebMvc
 public class AAA_BatteryProjectApplication {
     public static void main(String[] args) {
         SpringApplication.run(AAA_BatteryProjectApplication.class, args);

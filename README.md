@@ -1,44 +1,69 @@
-before running any of this, make sure you have the following installed:
+# Project Setup Guide
+
+Before running any part of this project, ensure you have the following installed:
 
 - **Node.js**: version 22
 - **JDK**: version 17
 - **Maven**: version 3.9.9
 
-to run the frontend:
+---
 
-```bash
-cd frontend
-cp .env.example .env.local
-```
+## Running the Frontend
 
-edit your newly created .env.local file with the required env variables. then run:
+1. Navigate to the `frontend` directory:
+   ```bash
+   cd frontend
+   ```
 
-```bash
-npm install
-npm run dev
-```
+2. Copy the example environment file and rename it:
+   ```bash
+   cp .env.example .env.local
+   ```
 
-your frontend will be running on:
+3. Edit the newly created `.env.local` file with the required environment variables.
 
-```bash
-http://localhost:3000/
-```
+4. Install dependencies and start the development server:
+   ```bash
+   npm install
+   npm run dev
+   ```
 
-to run the backend:
+5. Your frontend will be running at:
+   ```bash
+   http://localhost:3000/
+   ```
 
-```bash
-cd backend
-cp .env.example .env
-```
+---
 
-edit your newly created .env file with the required env variables. then run:
+## Running the Backend
 
-```bash
-./build.sh
-```
+1. Navigate to the `backend` directory:
+   ```bash
+   cd backend
+   ```
 
-your backend calls will be routed to:
+2. Copy the example environment file and rename it:
+   ```bash
+   cp .env.example .env
+   ```
 
-```bash
-http://localhost:8080/
-```
+3. Edit the newly created `.env` file with the required environment variables.
+
+4. Build and run the backend:
+   ```bash
+   ./build.sh
+   ```
+
+5. Your backend calls will be routed to:
+   ```bash
+   http://localhost:8080/
+   ```
+
+6. All backend endpoints are available at:
+   ```bash
+   http://localhost:8080/actuator/mappings
+   ```
+
+---
+
+Feel free to reach out if you encounter any issues during setup!

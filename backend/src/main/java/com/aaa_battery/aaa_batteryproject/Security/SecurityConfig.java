@@ -1,4 +1,4 @@
-package com.aaa_battery.aaa_batteryproject.Security;
+package com.aaa_battery.aaa_batteryproject.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

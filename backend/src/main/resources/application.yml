@@ -10,11 +10,21 @@ spring:
     user:
       name: user
       password: password
+  mvc:
+    throw-exceptions-if-no-handler-found: true
+
 jpa:
   database-platform: org.hibernate.dialect.PostgreSQLDialect
   hibernate:
     ddl-auto: update
+
 server:
   error:
     include-message: always
     include-binding-errors: always
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: mappings
