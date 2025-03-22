@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 @RequestMapping("/api/auth")
@@ -59,16 +60,24 @@ public class AuthenticationController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(HttpServletResponse response) {
+    public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
+        // Check if the "jwt" cookie exists
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null || 
+            java.util.Arrays.stream(cookies).noneMatch(cookie -> "jwt".equals(cookie.getName()))) {
+            // Return an error response if no "jwt" cookie is found
+            return ResponseEntity.status(401).build(); // 401 Unauthorized
+        }
+
         // Create a cookie with the same name but expired
         Cookie cookie = new Cookie("jwt", "");
         cookie.setHttpOnly(true);
         cookie.setMaxAge(0); // Expire immediately
         cookie.setPath("/");
         cookie.setSecure(true);
-        
+
         response.addCookie(cookie);
-        
+
         return ResponseEntity.ok().build();
     }
 }
