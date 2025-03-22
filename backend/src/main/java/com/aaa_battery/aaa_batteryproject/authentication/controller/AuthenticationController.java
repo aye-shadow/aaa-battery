@@ -57,4 +57,18 @@ public class AuthenticationController {
 
         return ResponseEntity.ok(loginResponse);
     }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(HttpServletResponse response) {
+        // Create a cookie with the same name but expired
+        Cookie cookie = new Cookie("jwt", "");
+        cookie.setHttpOnly(true);
+        cookie.setMaxAge(0); // Expire immediately
+        cookie.setPath("/");
+        cookie.setSecure(true);
+        
+        response.addCookie(cookie);
+        
+        return ResponseEntity.ok().build();
+    }
 }

@@ -25,4 +25,10 @@ public class LibrarianController {
 
         return ResponseEntity.ok(users);
     }
+
+    @PostMapping("/add_user")
+    public ResponseEntity<UserEntity> addUser(@RequestBody UserEntity user) {
+       // do nothign, this is an example endpoint
+        return ResponseEntity.ok(user);
+    }
 }
