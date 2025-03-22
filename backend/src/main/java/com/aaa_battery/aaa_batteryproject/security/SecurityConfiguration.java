@@ -38,13 +38,14 @@ public class SecurityConfiguration {
                     "http://localhost:3000",
                     "https://aaa-battery.vercel.app",
                     "https://aaa-battery-spring-backend-894699792c03.herokuapp.com"
-                )); // Removed trailing comma
+                )); 
                 config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE")); // Ensure no trailing comma
                 config.setAllowedHeaders(List.of("*")); // Ensure no trailing comma
                 config.setAllowCredentials(true); // Allows cookies
                 return config;
             }))
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/actuator/mappings").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/librarian/**").hasRole("LIBRARIAN")
                 .requestMatchers("/api/user/**").authenticated()
