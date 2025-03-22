@@ -9,14 +9,18 @@ import jakarta.persistence.Table;
 @PrimaryKeyJoinColumn(name = "id") // Links to the 'id' column in the 'users' table
 public class LibrarianEntity extends UserEntity {
 
-    public LibrarianEntity() {
+    public LibrarianEntity()
+    {
+
     }
 
     public LibrarianEntity(String fullName, String email, String password) {
         super(fullName, email, password);
     }
 
-    void add_item() {
+    void add_item()
+    {
+
     }
 
     void remove_item() {

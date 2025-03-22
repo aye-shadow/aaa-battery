@@ -36,7 +36,7 @@ In a typical Spring application, the following components are used to organize t
 ## 3. **Services**
    - **Purpose**: Contain business logic and act as an intermediary between controllers and repositories.
    - **Details**:
-     - ervices are annotated with `@Service`.
+     - services are annotated with `@Service`.
      - They process data, handle transactions, and call repositories to fetch or save data.
    - **Example**: A `UserService` to manage user-related operations.
 
