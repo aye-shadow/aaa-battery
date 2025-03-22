@@ -39,7 +39,23 @@ public class AuthenticationController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> authenticate(
             @RequestBody LoginUserDto loginUserDto, 
+            HttpServletRequest request, 
             HttpServletResponse response) {
+        // Check if the "jwt" cookie already exists
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("jwt".equals(cookie.getName())) {
+                    // Return the existing JWT token and its expiration time
+                    LoginResponse alreadyLoggedInResponse = new LoginResponse()
+                            .setToken(cookie.getValue())
+                            .setExpiresIn(jwtService.getExpirationTime()) // Assuming this retrieves the correct expiration time
+                            .setMessage("User already logged in");
+                    return ResponseEntity.ok(alreadyLoggedInResponse);
+                }
+            }
+        }
+
         UserEntity authenticatedUser = authenticationService.authenticate(loginUserDto);
 
         String jwtToken = jwtService.generateToken(authenticatedUser);
@@ -54,19 +70,20 @@ public class AuthenticationController {
 
         LoginResponse loginResponse = new LoginResponse()
                 .setToken(jwtToken)
-                .setExpiresIn(jwtService.getExpirationTime());
+                .setExpiresIn(jwtService.getExpirationTime())
+                .setMessage("Login successful");
 
         return ResponseEntity.ok(loginResponse);
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<String> logout(HttpServletRequest request, HttpServletResponse response) {
         // Check if the "jwt" cookie exists
         Cookie[] cookies = request.getCookies();
         if (cookies == null || 
             java.util.Arrays.stream(cookies).noneMatch(cookie -> "jwt".equals(cookie.getName()))) {
-            // Return an error response if no "jwt" cookie is found
-            return ResponseEntity.status(401).build(); // 401 Unauthorized
+            // Return an error response with a message if no "jwt" cookie is found
+            return ResponseEntity.status(401).body("No user logged in");
         }
 
         // Create a cookie with the same name but expired
@@ -78,6 +95,6 @@ public class AuthenticationController {
 
         response.addCookie(cookie);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok("User logged out successfully");
     }
 }
