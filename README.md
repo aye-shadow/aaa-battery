@@ -50,6 +50,7 @@ Before running any part of this project, ensure you have the following installed
 3. Edit the newly created `.env` file with the required environment variables.
 
 4. Build and run the backend:
+   > **Note for Windows users:** Use Git Bash or WSL to run the following command.
    ```bash
    ./build.sh
    ```

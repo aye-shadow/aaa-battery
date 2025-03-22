@@ -23,4 +23,10 @@ public class UserService {
 
         return users;
     }
+
+    public void updatePassword(Long userId, String encodedPassword) {
+        UserEntity user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        user.setPassword(encodedPassword);
+        userRepository.save(user);
+    }
 }
