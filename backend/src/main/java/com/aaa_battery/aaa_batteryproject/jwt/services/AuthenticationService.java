@@ -3,7 +3,8 @@ package com.aaa_battery.aaa_batteryproject.jwt.services;
 import com.aaa_battery.aaa_batteryproject.jwt.dtos.LoginUserDto;
 import com.aaa_battery.aaa_batteryproject.jwt.dtos.RegisterUserDto;
 import com.aaa_battery.aaa_batteryproject.user.model.UserEntity;
-import com.aaa_battery.aaa_batteryproject.user.repository.UserRepository;
+import com.aaa_battery.aaa_batteryproject.user.repositories.UserRepository;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;

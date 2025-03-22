@@ -21,7 +21,7 @@ import io.github.cdimascio.dotenv.Dotenv;
 })
 @EnableJpaRepositories(basePackages = {
     "com.aaa_battery.aaa_batteryproject.testclass.repository",
-    "com.aaa_battery.aaa_batteryproject.user.repository"
+    "com.aaa_battery.aaa_batteryproject.user.repositories"
 })
 @EnableWebMvc
 public class AAA_BatteryProjectApplication {

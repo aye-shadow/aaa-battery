@@ -1,12 +1,16 @@
 package com.aaa_battery.aaa_batteryproject.user.controller;
 
+import org.springframework.security.core.Authentication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import com.aaa_battery.aaa_batteryproject.user.model.UserEntity;
-import com.aaa_battery.aaa_batteryproject.user.repository.UserRepository;
+import com.aaa_battery.aaa_batteryproject.user.repositories.UserRepository;
+import com.aaa_battery.aaa_batteryproject.user.services.UserService;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -56,41 +60,18 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<?> authenticatedUser() {
-        try {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    public ResponseEntity<UserEntity> authenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-            if (authentication == null || !authentication.isAuthenticated()) {
-                return new ResponseEntity<>("Unauthorized", HttpStatus.UNAUTHORIZED);
-            }
+        UserEntity currentUser = (UserEntity) authentication.getPrincipal();
 
-            // Assuming authentication principal returns UserEntity
-            UserEntity currentUser = (UserEntity) authentication.getPrincipal();
-
-            // Hide sensitive data before returning
-            UserEntity safeUser = new UserEntity();
-            safeUser.setId(currentUser.getId());
-            safeUser.setEmail(currentUser.getEmail());
-            safeUser.setUsername(currentUser.getUsername());
-
-            return ResponseEntity.ok(safeUser);
-        } catch (Exception e) {
-            return new ResponseEntity<>("Error retrieving user info: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        return ResponseEntity.ok(currentUser);
     }
 
     @GetMapping("/")
-    public ResponseEntity<?> allUsers() {
-        try {
-            List<UserEntity> users = userRepository.findAll();
+    public ResponseEntity<List<UserEntity>> allUsers() {
+        List <UserEntity> users = userService.allUsers();
 
-            if (users.isEmpty()) {
-                return new ResponseEntity<>("No users found", HttpStatus.NOT_FOUND);
-            }
-
-            return ResponseEntity.ok(users);
-        } catch (Exception e) {
-            return new ResponseEntity<>("Error retrieving users: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        return ResponseEntity.ok(users);
     }
 }

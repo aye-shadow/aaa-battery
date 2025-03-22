@@ -1,7 +1,8 @@
-package com.tericcabrel.authapi.services;
+package com.aaa_battery.aaa_batteryproject.user.services;
 
-import com.tericcabrel.authapi.entities.User;
-import com.tericcabrel.authapi.repositories.UserRepository;
+import com.aaa_battery.aaa_batteryproject.user.model.UserEntity;
+import com.aaa_battery.aaa_batteryproject.user.repositories.UserRepository;
+
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -15,8 +16,8 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public List<User> allUsers() {
-        List<User> users = new ArrayList<>();
+    public List<UserEntity> allUsers() {
+        List<UserEntity> users = new ArrayList<>();
 
         userRepository.findAll().forEach(users::add);
 

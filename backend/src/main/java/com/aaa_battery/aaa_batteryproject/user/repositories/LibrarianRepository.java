@@ -1,4 +1,4 @@
-package com.aaa_battery.aaa_batteryproject.user.repository;
+package com.aaa_battery.aaa_batteryproject.user.repositories;
 
 import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.JpaRepository;

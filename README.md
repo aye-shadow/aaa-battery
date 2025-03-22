@@ -64,6 +64,8 @@ Before running any part of this project, ensure you have the following installed
    http://localhost:8080/actuator/mappings
    ```
 
+7. For more details refer to the `README.MD` file inside the `backend` directory.
+
 ---
 
 Feel free to reach out if you encounter any issues during setup!
