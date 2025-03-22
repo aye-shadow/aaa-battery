@@ -7,4 +7,9 @@ import jakarta.persistence.*;
 public class AudiobookDescription extends ItemDescriptionEntity
 {
     private String narratedBy;
+
+    public void setNarratedBy(String narratedBy)
+    {
+        this.narratedBy = narratedBy;
+    }
 }
