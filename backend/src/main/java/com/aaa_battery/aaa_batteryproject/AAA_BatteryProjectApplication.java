@@ -41,6 +41,7 @@ public class AAA_BatteryProjectApplication {
                 System.setProperty("JDBC_DATABASE_URL", dotenv.get("JDBC_DATABASE_URL"));
                 System.setProperty("JDBC_DATABASE_USERNAME", dotenv.get("JDBC_DATABASE_USERNAME"));
                 System.setProperty("JDBC_DATABASE_PASSWORD", dotenv.get("JDBC_DATABASE_PASSWORD"));
+                System.setProperty("JWT_SECRET_KEY", dotenv.get("JWT_SECRET_KEY"));
             }
         };
     }

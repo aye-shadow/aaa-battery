@@ -79,7 +79,7 @@ In a typical Spring application, the following components are used to organize t
     }
    ```
 
-## 5. ** DTOs (Data Transfer Objects)**
+## 5. **DTOs (Data Transfer Objects)**
    - **Purpose**: Simplify data transfer between layers or to/from the client.
    - **Details**:
      - DTOs are plain Java objects (POJOs) that contain only the data needed for a specific operation.
