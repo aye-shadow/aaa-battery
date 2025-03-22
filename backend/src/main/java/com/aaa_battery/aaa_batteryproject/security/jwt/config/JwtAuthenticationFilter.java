@@ -1,4 +1,4 @@
-package com.aaa_battery.aaa_batteryproject.jwt.config;
+package com.aaa_battery.aaa_batteryproject.security.jwt.config;
 
 import org.springframework.stereotype.Component;
 import jakarta.servlet.FilterChain;
@@ -15,7 +15,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
-import com.aaa_battery.aaa_batteryproject.jwt.services.JwtService;
+import com.aaa_battery.aaa_batteryproject.security.jwt.services.JwtService;
 
 import java.io.IOException;
 

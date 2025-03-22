@@ -1,11 +1,12 @@
-package com.aaa_battery.aaa_batteryproject.jwt.controller;
+package com.aaa_battery.aaa_batteryproject.authentication.controller;
 
+import com.aaa_battery.aaa_batteryproject.authentication.responses.LoginResponse;
+import com.aaa_battery.aaa_batteryproject.authentication.service.AuthenticationService;
+import com.aaa_battery.aaa_batteryproject.security.jwt.services.JwtService;
+import com.aaa_battery.aaa_batteryproject.user.dtos.LoginUserDto;
+import com.aaa_battery.aaa_batteryproject.user.dtos.RegisterUserDto;
 import com.aaa_battery.aaa_batteryproject.user.model.UserEntity;
-import com.aaa_battery.aaa_batteryproject.jwt.services.AuthenticationService;
-import com.aaa_battery.aaa_batteryproject.jwt.services.JwtService;
-import com.aaa_battery.aaa_batteryproject.jwt.dtos.LoginUserDto;
-import com.aaa_battery.aaa_batteryproject.jwt.dtos.RegisterUserDto;
-import com.aaa_battery.aaa_batteryproject.jwt.responses.LoginResponse;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

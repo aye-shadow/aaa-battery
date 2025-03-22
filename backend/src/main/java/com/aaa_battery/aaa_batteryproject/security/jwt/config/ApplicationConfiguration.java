@@ -1,4 +1,4 @@
-package com.aaa_battery.aaa_batteryproject.jwt.config;
+package com.aaa_battery.aaa_batteryproject.security.jwt.config;
 
 
 import org.springframework.context.annotation.Bean;

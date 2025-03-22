@@ -1,4 +1,4 @@
-package com.aaa_battery.aaa_batteryproject.jwt.responses;
+package com.aaa_battery.aaa_batteryproject.authentication.responses;
 
 public class LoginResponse {
     private String token;

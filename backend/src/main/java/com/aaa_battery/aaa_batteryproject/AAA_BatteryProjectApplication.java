@@ -17,7 +17,10 @@ import io.github.cdimascio.dotenv.Dotenv;
 @ComponentScan(basePackages = "com.aaa_battery.aaa_batteryproject")
 @EntityScan(basePackages = {
     "com.aaa_battery.aaa_batteryproject.testclass.model",
-    "com.aaa_battery.aaa_batteryproject.user.model"
+    "com.aaa_battery.aaa_batteryproject.user.model",
+    "com.aaa_battery.aaa_batteryproject.borrows.model",
+    "com.aaa_battery.aaa_batteryproject.subscription.model"
+
 })
 @EnableJpaRepositories(basePackages = {
     "com.aaa_battery.aaa_batteryproject.testclass.repository",

@@ -1,4 +1,4 @@
-package com.aaa_battery.aaa_batteryproject.jwt.services;
+package com.aaa_battery.aaa_batteryproject.security.jwt.services;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

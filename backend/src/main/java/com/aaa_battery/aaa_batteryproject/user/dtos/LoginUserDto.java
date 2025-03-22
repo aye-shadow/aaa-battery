@@ -1,4 +1,4 @@
-package com.aaa_battery.aaa_batteryproject.jwt.dtos;
+package com.aaa_battery.aaa_batteryproject.user.dtos;
 
 public class LoginUserDto {
     private String email;

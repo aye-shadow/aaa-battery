@@ -9,7 +9,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import com.aaa_battery.aaa_batteryproject.jwt.config.JwtAuthenticationFilter;
+import com.aaa_battery.aaa_batteryproject.security.jwt.config.JwtAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -30,6 +30,8 @@ public class SecurityConfiguration {
         http.csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/librarian/**").hasRole("LIBRARIAN") // Restricted to LIBRARIAN role
+                .requestMatchers("/api/user/**").authenticated() // Restricted to authenticated users
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session
