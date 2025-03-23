@@ -1,5 +1,7 @@
 package com.aaa_battery.aaa_batteryproject.item.itemdescriptions.models;
 
+import java.time.Duration;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -7,22 +9,33 @@ import jakarta.persistence.*;
 @PrimaryKeyJoinColumn(name = "description_id")
 public class DVDDescription extends ItemDescriptionEntity {
 
-    private String productionCompany;
-    private String description;
+    private String producer;
+    private String director;
+    private Duration duration;
 
-    public String getProductionCompany() {
-        return productionCompany;
+    public String getproducer() {
+        return producer;
     }
 
-    public void setProductionCompany(String productionCompany) {
-        this.productionCompany = productionCompany;
+    public void setProducer(String producer) {
+        this.producer = producer;
     }
 
-    public String getDescription() {
-        return description;
+    public String getDirector() {
+        return director;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setDirector(String director) {
+        this.director = director;
+    }
+
+    public void setDuration(Duration duration)
+    {
+        this.duration = duration;
+    }
+
+    public Duration getDuration()
+    {
+        return duration;
     }
 }

@@ -1,10 +1,12 @@
 package com.aaa_battery.aaa_batteryproject.item.itemdescriptions.models;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Map;
 
 import jakarta.persistence.*;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "item_description")
@@ -15,13 +17,13 @@ public class ItemDescriptionEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int descriptionId;
 
+    private String type;
     private String itemName;
     private String genre;
     private String blurb;
     private LocalDateTime date;
     private int totalCopies;
     private String imageUrl;
-    private String type;
 
     public String getType() {
         return type;
@@ -80,5 +82,68 @@ public class ItemDescriptionEntity {
 
     public void setBookDescription(BookDescription bookDesc)
     {
+    }
+
+    // Helper method to create description based on type
+    public static ItemDescriptionEntity createDescription(Map<String, Object> requestData) {
+        String type = ((String) requestData.get("type")).toLowerCase();
+        ItemDescriptionEntity description;
+    
+        switch (type) {
+            case "book" -> {
+                description = new BookDescription();
+                populateBookDetails((BookDescription) description, requestData);
+            }
+            case "audiobook" -> {
+                description = new AudiobookDescription();
+                populateAudiobookDetails((AudiobookDescription) description, requestData);
+            }
+            case "dvd" -> {
+                description = new DVDDescription();
+                populateDVDDetails((DVDDescription) description, requestData);
+            }
+            default -> throw new IllegalArgumentException("Invalid item type: " + type);
+        }
+    
+        populateCommonDetails(description, requestData);
+        return description;
+    }
+    
+    private static void populateBookDetails(BookDescription description, Map<String, Object> requestData) {
+        description.setAuthorName((String) requestData.get("authorName"));
+        description.setPublisher((String) requestData.get("publisher"));
+    }
+    
+    private static void populateAudiobookDetails(AudiobookDescription description, Map<String, Object> requestData) {
+        description.setAuthorName((String) requestData.get("authorName"));
+        description.setPublisher((String) requestData.get("publisher"));
+        description.setNarratedBy((String) requestData.get("narrator"));
+        description.setDuration(parseDuration((String) requestData.get("duration")));
+    }
+    
+    private static void populateDVDDetails(DVDDescription description, Map<String, Object> requestData) {
+        description.setProducer((String) requestData.get("producer"));
+        description.setDirector((String) requestData.get("director"));
+        description.setDuration(parseDuration((String) requestData.get("duration")));
+    }
+    
+    private static void populateCommonDetails(ItemDescriptionEntity description, Map<String, Object> requestData) {
+        description.setItemName((String) requestData.get("itemName"));
+        description.setGenre((String) requestData.get("genre"));
+        description.setBlurb((String) requestData.get("blurb"));
+        description.setDate(LocalDateTime.parse((String) requestData.get("date")));
+        description.setTotalCopies((Integer) requestData.get("totalCopies"));
+        description.setImageUrl((String) requestData.get("imageUrl"));
+        description.setType((String) requestData.get("type"));
+    }
+    
+    private static Duration parseDuration(String durationString) {
+        if (durationString == null) {
+            return null;
+        }
+        LocalTime time = LocalTime.parse(durationString, DateTimeFormatter.ofPattern("HH:mm:ss"));
+        return Duration.ofHours(time.getHour())
+                       .plusMinutes(time.getMinute())
+                       .plusSeconds(time.getSecond());
     }
 }

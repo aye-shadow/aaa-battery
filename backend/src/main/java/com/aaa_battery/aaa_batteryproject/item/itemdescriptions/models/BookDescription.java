@@ -8,6 +8,7 @@ public class BookDescription extends ItemDescriptionEntity {
 
     private String authorName;
     private String publisher;
+    
     public String getAuthorName() {
         return authorName;
     }
