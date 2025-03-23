@@ -1,6 +1,6 @@
 package com.aaa_battery.aaa_batteryproject.requests.controller;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -37,6 +37,51 @@ public class RequestController {
         } catch (Exception e) {
             // Return a failure message in case of an error
             return ResponseEntity.status(500).body("Failed to submit the request");
+        }
+    }
+
+    @GetMapping("/borrower/my-requests")
+    public ResponseEntity<List<RequestEntity>> viewMyRequests() {
+        try {
+            // Get the currently authenticated borrower
+            BorrowerEntity borrower = borrowerService.getAuthenticatedBorrower();
+            
+            // Need to add a method in RequestService to find requests by requestor
+            List<RequestEntity> requests = requestService.findByRequestor(borrower);
+            
+            return ResponseEntity.ok(requests);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(null);
+        }
+    }
+
+    @GetMapping("/librarian/view-requests")
+    public ResponseEntity<List<RequestEntity>> viewRequests() {
+        try {
+            // Fetch all requests using the RequestService
+            List<RequestEntity> requests = requestService.getAllRequests();
+
+            // Return the list of requests in the response
+            return ResponseEntity.ok(requests);
+        } catch (Exception e) {
+            // Handle any exceptions and return an error response
+            return ResponseEntity.status(500).body(null);
+        }
+    }
+
+    @PostMapping("/librarian/handle-request/{requestId}")
+    public ResponseEntity<String> handleRequest(@PathVariable Long requestId, @RequestParam String status) {
+        try {
+            // Convert the status string to RequestEntity.RequestStatus enum
+            RequestEntity.RequestStatus requestStatus = RequestEntity.RequestStatus.valueOf(status.toUpperCase());
+            
+            // Update to use a more generic method that can handle different statuses
+            requestService.updateRequestStatus(requestId, requestStatus);
+            return ResponseEntity.ok("Request status updated to: " + requestStatus);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("Invalid status value: " + status);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Failed to update the request status: " + e.getMessage());
         }
     }
 }

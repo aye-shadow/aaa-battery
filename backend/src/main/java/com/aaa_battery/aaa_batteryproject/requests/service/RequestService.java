@@ -1,9 +1,8 @@
 package com.aaa_battery.aaa_batteryproject.requests.service;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
-
 import com.aaa_battery.aaa_batteryproject.requests.dto.RequestDTO;
 import com.aaa_battery.aaa_batteryproject.requests.model.RequestEntity;
 import com.aaa_battery.aaa_batteryproject.requests.repository.RequestRepository;
@@ -16,6 +15,7 @@ public class RequestService {
 
     public RequestService(RequestRepository requestRepository) {
         this.requestRepository = requestRepository;
+        
     }
 
     public RequestEntity convertToEntity(RequestDTO requestDTO, BorrowerEntity borrower) {
@@ -34,5 +34,20 @@ public class RequestService {
     
         return requestRepository.save(requestEntity);
     }
-    
+
+    public List<RequestEntity> getAllRequests() {
+        return requestRepository.findAll();
+    }
+
+    public List<RequestEntity> findByRequestor(BorrowerEntity requestor) {
+        return requestRepository.findByRequestor(requestor);
+    }
+
+    public void updateRequestStatus(Long requestId, RequestEntity.RequestStatus status) {
+        RequestEntity requestEntity = requestRepository.findById(requestId).
+                orElseThrow(() -> new RuntimeException("Request not found"));
+        requestEntity.setStatus(status);
+        requestRepository.save(requestEntity);
+    }    
 }
+    
