@@ -1,15 +1,10 @@
 package com.aaa_battery.aaa_batteryproject.user.model;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.aaa_battery.aaa_batteryproject.borrows.model.BorrowEntity;
-import com.aaa_battery.aaa_batteryproject.requests.model.RequestEntity;
 import com.aaa_battery.aaa_batteryproject.subscription.model.SubscriptionEntity;
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;

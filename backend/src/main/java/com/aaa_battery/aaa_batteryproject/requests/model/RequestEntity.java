@@ -43,6 +43,7 @@ public class RequestEntity {
     private String notes;
 
     public enum RequestStatus {
+        SUBMITTED,
         PENDING,
         APPROVED,
         REJECTED,
@@ -50,7 +51,7 @@ public class RequestEntity {
     }
 
     public RequestEntity() {
-        this.status = RequestStatus.PENDING;
+        this.status = RequestStatus.SUBMITTED;
     }
 
     public Integer getId() {

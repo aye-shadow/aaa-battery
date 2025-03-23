@@ -68,4 +68,20 @@ public class RequestController {
             return ResponseEntity.status(500).body(null);
         }
     }
+
+    @PostMapping("/librarian/handle-request/{requestId}")
+    public ResponseEntity<String> handleRequest(@PathVariable Long requestId, @RequestParam String status) {
+        try {
+            // Convert the status string to RequestEntity.RequestStatus enum
+            RequestEntity.RequestStatus requestStatus = RequestEntity.RequestStatus.valueOf(status.toUpperCase());
+            
+            // Update to use a more generic method that can handle different statuses
+            requestService.updateRequestStatus(requestId, requestStatus);
+            return ResponseEntity.ok("Request status updated to: " + requestStatus);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("Invalid status value: " + status);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Failed to update the request status: " + e.getMessage());
+        }
+    }
 }

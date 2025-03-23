@@ -42,5 +42,12 @@ public class RequestService {
     public List<RequestEntity> findByRequestor(BorrowerEntity requestor) {
         return requestRepository.findByRequestor(requestor);
     }
+
+    public void updateRequestStatus(Long requestId, RequestEntity.RequestStatus status) {
+        RequestEntity requestEntity = requestRepository.findById(requestId).
+                orElseThrow(() -> new RuntimeException("Request not found"));
+        requestEntity.setStatus(status);
+        requestRepository.save(requestEntity);
+    }    
 }
     
