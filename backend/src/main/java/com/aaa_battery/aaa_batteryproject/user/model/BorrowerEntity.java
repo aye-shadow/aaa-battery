@@ -62,4 +62,14 @@ public class BorrowerEntity extends UserEntity {
     }
 
 
+    public void addBorrowedItem(BorrowEntity borrow) {
+        borrowedItems.add(borrow);
+        borrow.setBorrower(this);
+    }
+
+    public void removeBorrowedItem(BorrowEntity borrow) {
+        borrowedItems.remove(borrow);
+        borrow.setBorrower(null);
+    }
+
 }

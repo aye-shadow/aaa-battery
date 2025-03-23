@@ -51,5 +51,6 @@ public class BorrowerService {
             throw new IllegalStateException("No authenticated user found");
         }
     }
-    
+
+
 }
