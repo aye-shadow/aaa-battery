@@ -20,7 +20,7 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "requests")
 public class RequestEntity {
-
+    
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;

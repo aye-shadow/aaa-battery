@@ -7,6 +7,9 @@ import java.util.List;
 import com.aaa_battery.aaa_batteryproject.borrows.model.BorrowEntity;
 import com.aaa_battery.aaa_batteryproject.requests.model.RequestEntity;
 import com.aaa_battery.aaa_batteryproject.subscription.model.SubscriptionEntity;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -24,9 +27,6 @@ public class BorrowerEntity extends UserEntity {
     @OneToMany(mappedBy = "borrower", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BorrowEntity> borrowedItems = new ArrayList<>();
 
-    @OneToMany(mappedBy = "requestor", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    private List<RequestEntity> requests = new ArrayList<>();
-
     @OneToOne(mappedBy = "borrower", cascade = CascadeType.ALL, orphanRemoval = true)
     private SubscriptionEntity subscription;
 
@@ -43,14 +43,6 @@ public class BorrowerEntity extends UserEntity {
 
     public void setBorrowedItems(List<BorrowEntity> borrowedItems) {
         this.borrowedItems = borrowedItems;
-    }
-
-    public List<RequestEntity> getRequests() {
-        return requests;
-    }
-
-    public void setRequests(List<RequestEntity> requests) {
-        this.requests = requests;
     }
 
     public SubscriptionEntity getSubscription() {

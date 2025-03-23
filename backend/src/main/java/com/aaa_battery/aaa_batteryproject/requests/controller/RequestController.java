@@ -5,11 +5,9 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.aaa_battery.aaa_batteryproject.user.dtos.UserDTO;
 import com.aaa_battery.aaa_batteryproject.user.model.BorrowerEntity;
 import com.aaa_battery.aaa_batteryproject.user.services.BorrowerService;
 import com.aaa_battery.aaa_batteryproject.requests.dto.RequestDTO;
-import com.aaa_battery.aaa_batteryproject.requests.dto.RequestResponseDTO;
 import com.aaa_battery.aaa_batteryproject.requests.model.RequestEntity;
 import com.aaa_battery.aaa_batteryproject.requests.service.RequestService;
 
@@ -43,16 +41,13 @@ public class RequestController {
     }
 
     @GetMapping("/librarian/view-requests")
-    public ResponseEntity<List<RequestResponseDTO>> viewRequests() {
+    public ResponseEntity<List<RequestEntity>> viewRequests() {
         try {
             // Fetch all requests using the RequestService
             List<RequestEntity> requests = requestService.getAllRequests();
 
-            // Convert RequestEntity to RequestResponseDTO
-            List<RequestResponseDTO> responseDTOs = requestService.getAllRequests(requests);
-
-            // Return the list of RequestResponseDTO in the response
-            return ResponseEntity.ok(responseDTOs);
+            // Return the list of requests in the response
+            return ResponseEntity.ok(requests);
         } catch (Exception e) {
             // Handle any exceptions and return an error response
             return ResponseEntity.status(500).body(null);
