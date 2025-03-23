@@ -47,7 +47,7 @@ public class SecurityConfiguration {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/actuator/mappings", "/api/auth/**").permitAll()
                 .requestMatchers("/api/librarian/**", "/api/items/librarian/**", "/api/request/librarian/**").hasRole("LIBRARIAN")
-                .requestMatchers("/api/items/borrower/**", "/api/request/borrower/**").hasRole("BORROWER")
+                .requestMatchers("/api/items/borrower/**", "/api/request/borrower/**", "/api/subscribe/borrower/**").hasRole("BORROWER")
                 .requestMatchers("/api/user/**", "/api/items/users/**").authenticated()
                 .anyRequest().authenticated()
             )

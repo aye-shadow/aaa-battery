@@ -17,17 +17,17 @@ public class BorrowEntity {
     private BorrowerEntity borrower;
 
     @ManyToOne
-    private ItemEntity item; // Assuming you have an ItemEntity class for the "item" field.
-
-    private ZonedDateTime requestDate;
+    private ItemEntity item;
+    
+    private ZonedDateTime requestDate; // remove
 
     private ZonedDateTime borrowDate;
 
     private ZonedDateTime returnDate;
 
-    private String status;
+    private String status; // remove
 
-    private String notes;
+    private String notes; // remove
 
     public BorrowEntity() {
     }
