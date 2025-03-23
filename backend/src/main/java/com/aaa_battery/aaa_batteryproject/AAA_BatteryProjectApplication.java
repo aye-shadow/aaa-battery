@@ -16,7 +16,6 @@ import io.github.cdimascio.dotenv.Dotenv;
 @SpringBootApplication
 @ComponentScan(basePackages = "com.aaa_battery.aaa_batteryproject")
 @EntityScan(basePackages = {
-    "com.aaa_battery.aaa_batteryproject.testclass.model",
     "com.aaa_battery.aaa_batteryproject.user.model",
     "com.aaa_battery.aaa_batteryproject.borrows.model",
     "com.aaa_battery.aaa_batteryproject.subscription.model",
@@ -26,11 +25,11 @@ import io.github.cdimascio.dotenv.Dotenv;
 
 })
 @EnableJpaRepositories(basePackages = {
-    "com.aaa_battery.aaa_batteryproject.testclass.repository",
     "com.aaa_battery.aaa_batteryproject.user.repositories",
     "com.aaa_battery.aaa_batteryproject.item.itemdescriptions.repository",
     "com.aaa_battery.aaa_batteryproject.item.repository",
-        "com.aaa_battery.aaa_batteryproject.borrows.repository"
+    "com.aaa_battery.aaa_batteryproject.borrows.repository",
+    "com.aaa_battery.aaa_batteryproject.requests.repository"
 })
 @EnableWebMvc
 public class AAA_BatteryProjectApplication {

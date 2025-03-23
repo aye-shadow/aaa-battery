@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.aaa_battery.aaa_batteryproject.user.model.UserEntity;
-import com.aaa_battery.aaa_batteryproject.user.service.UserService;
+import com.aaa_battery.aaa_batteryproject.user.services.UserService;
 
 import java.util.List;
 

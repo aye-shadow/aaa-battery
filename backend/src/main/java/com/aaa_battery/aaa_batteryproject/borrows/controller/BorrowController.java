@@ -13,7 +13,7 @@ import com.aaa_battery.aaa_batteryproject.item.repository.ItemRepository;
 import  com.aaa_battery.aaa_batteryproject.user.model.BorrowerEntity;
 import com.aaa_battery.aaa_batteryproject.item.model.ItemEntity;
 import com.aaa_battery.aaa_batteryproject.item.service.ItemService;
-import com.aaa_battery.aaa_batteryproject.user.service.BorrowerService;
+import com.aaa_battery.aaa_batteryproject.user.services.BorrowerService;
 import com.aaa_battery.aaa_batteryproject.borrows.service.BorrowService;
 import com.aaa_battery.aaa_batteryproject.item.itemdescriptions.models.AudiobookDescription;
 import com.aaa_battery.aaa_batteryproject.item.itemdescriptions.models.DVDDescription;
