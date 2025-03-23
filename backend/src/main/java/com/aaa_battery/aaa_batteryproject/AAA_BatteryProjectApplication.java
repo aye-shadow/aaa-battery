@@ -21,7 +21,8 @@ import io.github.cdimascio.dotenv.Dotenv;
     "com.aaa_battery.aaa_batteryproject.borrows.model",
     "com.aaa_battery.aaa_batteryproject.subscription.model",
     "com.aaa_battery.aaa_batteryproject.item.itemdescriptions.models",
-    "com.aaa_battery.aaa_batteryproject.item.model"
+    "com.aaa_battery.aaa_batteryproject.item.model",
+    "com.aaa_battery.aaa_batteryproject.requests.model"
 
 })
 @EnableJpaRepositories(basePackages = {
