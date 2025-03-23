@@ -6,6 +6,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+
+import com.aaa_battery.aaa_batteryproject.user.dtos.UserDTO;
 import com.aaa_battery.aaa_batteryproject.user.model.UserEntity;
 import com.aaa_battery.aaa_batteryproject.user.services.UserService;
 
@@ -23,12 +25,13 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<UserEntity> authenticatedUser() {
+    public ResponseEntity<UserDTO> authenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         UserEntity currentUser = (UserEntity) authentication.getPrincipal();
+        UserDTO userDTO = userService.convertToDTO(currentUser);
 
-        return ResponseEntity.ok(currentUser);
+        return ResponseEntity.ok(userDTO);
     }
 
     @PostMapping("/change-password")

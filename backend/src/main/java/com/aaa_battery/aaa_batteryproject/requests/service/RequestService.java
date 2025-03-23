@@ -1,13 +1,15 @@
 package com.aaa_battery.aaa_batteryproject.requests.service;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
-
 import com.aaa_battery.aaa_batteryproject.requests.dto.RequestDTO;
+import com.aaa_battery.aaa_batteryproject.requests.dto.RequestResponseDTO;
 import com.aaa_battery.aaa_batteryproject.requests.model.RequestEntity;
 import com.aaa_battery.aaa_batteryproject.requests.repository.RequestRepository;
+import com.aaa_battery.aaa_batteryproject.user.dtos.UserDTO;
 import com.aaa_battery.aaa_batteryproject.user.model.BorrowerEntity;
+import com.aaa_battery.aaa_batteryproject.user.services.UserService;
 
 @Service
 public class RequestService {
@@ -16,6 +18,7 @@ public class RequestService {
 
     public RequestService(RequestRepository requestRepository) {
         this.requestRepository = requestRepository;
+        
     }
 
     public RequestEntity convertToEntity(RequestDTO requestDTO, BorrowerEntity borrower) {
@@ -34,5 +37,29 @@ public class RequestService {
     
         return requestRepository.save(requestEntity);
     }
-    
+
+    public List<RequestEntity> getAllRequests() {
+        return requestRepository.findAll();
+    }    
+
+    public List<RequestResponseDTO> getAllRequests(List<RequestEntity> requests) {
+        List<RequestResponseDTO> responseDTOs = requests.stream().map(request -> {
+            RequestResponseDTO dto = new RequestResponseDTO();
+            dto.setId(request.getId());
+            dto.setItemType(request.getItemType());
+            dto.setItemName(request.getItemName());
+            dto.setItemBy(request.getItemBy());
+            dto.setNotes(request.getNotes());
+            dto.setStatus(request.getStatus());
+
+            // Map UserDTO from BorrowerEntity
+            UserDTO userDTO = UserService.converToDTO(request.getRequestor());
+            dto.setUser(userDTO);
+
+            return dto;
+        }).toList();
+
+        return responseDTOs;
+    }
 }
+    
