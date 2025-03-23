@@ -38,5 +38,9 @@ public class RequestService {
     public List<RequestEntity> getAllRequests() {
         return requestRepository.findAll();
     }
+
+    public List<RequestEntity> findByRequestor(BorrowerEntity requestor) {
+        return requestRepository.findByRequestor(requestor);
+    }
 }
     

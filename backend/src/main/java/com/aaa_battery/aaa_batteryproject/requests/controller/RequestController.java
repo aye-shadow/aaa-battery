@@ -40,6 +40,21 @@ public class RequestController {
         }
     }
 
+    @GetMapping("/borrower/my-requests")
+    public ResponseEntity<List<RequestEntity>> viewMyRequests() {
+        try {
+            // Get the currently authenticated borrower
+            BorrowerEntity borrower = borrowerService.getAuthenticatedBorrower();
+            
+            // Need to add a method in RequestService to find requests by requestor
+            List<RequestEntity> requests = requestService.findByRequestor(borrower);
+            
+            return ResponseEntity.ok(requests);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(null);
+        }
+    }
+
     @GetMapping("/librarian/view-requests")
     public ResponseEntity<List<RequestEntity>> viewRequests() {
         try {
