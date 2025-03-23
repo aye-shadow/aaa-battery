@@ -29,7 +29,8 @@ import io.github.cdimascio.dotenv.Dotenv;
     "com.aaa_battery.aaa_batteryproject.testclass.repository",
     "com.aaa_battery.aaa_batteryproject.user.repositories",
     "com.aaa_battery.aaa_batteryproject.item.itemdescriptions.repository",
-    "com.aaa_battery.aaa_batteryproject.item.repository"
+    "com.aaa_battery.aaa_batteryproject.item.repository",
+        "com.aaa_battery.aaa_batteryproject.borrows.repository"
 })
 @EnableWebMvc
 public class AAA_BatteryProjectApplication {

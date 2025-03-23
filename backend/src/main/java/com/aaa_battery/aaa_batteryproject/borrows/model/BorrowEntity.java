@@ -1,13 +1,9 @@
 package com.aaa_battery.aaa_batteryproject.borrows.model;
 
 import com.aaa_battery.aaa_batteryproject.user.model.BorrowerEntity;
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import com.aaa_battery.aaa_batteryproject.item.model.ItemEntity;
+import jakarta.persistence.*;
+import java.time.ZonedDateTime;
 
 @Entity
 @Table(name = "borrows")
@@ -20,22 +16,99 @@ public class BorrowEntity {
     @ManyToOne
     private BorrowerEntity borrower;
 
+    @ManyToOne
+    private ItemEntity item; // Assuming you have an ItemEntity class for the "item" field.
+
+    private ZonedDateTime requestDate;
+
+    private ZonedDateTime borrowDate;
+
+    private ZonedDateTime returnDate;
+
+    private String status;
+
+    private String notes;
+
     public BorrowEntity() {
     }
 
+    // Getter for id
     public Integer getId() {
         return id;
     }
 
+    // Setter for id
     public void setId(Integer id) {
         this.id = id;
     }
 
+    // Getter for borrower
     public BorrowerEntity getBorrower() {
         return borrower;
     }
 
+    // Setter for borrower
     public void setBorrower(BorrowerEntity borrower) {
         this.borrower = borrower;
+    }
+
+    // Getter for item
+    public ItemEntity getItem() {
+        return item;
+    }
+
+    // Setter for item
+    public void setItem(ItemEntity item) {
+        this.item = item;
+    }
+
+    // Getter for requestDate
+    public ZonedDateTime getRequestDate() {
+        return requestDate;
+    }
+
+    // Setter for requestDate
+    public void setRequestDate(ZonedDateTime requestDate) {
+        this.requestDate = requestDate;
+    }
+
+    // Getter for borrowDate
+    public ZonedDateTime getBorrowDate() {
+        return borrowDate;
+    }
+
+    // Setter for borrowDate
+    public void setBorrowDate(ZonedDateTime borrowDate) {
+        this.borrowDate = borrowDate;
+    }
+
+    // Getter for returnDate
+    public ZonedDateTime getReturnDate() {
+        return returnDate;
+    }
+
+    // Setter for returnDate
+    public void setReturnDate(ZonedDateTime returnDate) {
+        this.returnDate = returnDate;
+    }
+
+    // Getter for status
+    public String getStatus() {
+        return status;
+    }
+
+    // Setter for status
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    // Getter for notes
+    public String getNotes() {
+        return notes;
+    }
+
+    // Setter for notes
+    public void setNotes(String notes) {
+        this.notes = notes;
     }
 }

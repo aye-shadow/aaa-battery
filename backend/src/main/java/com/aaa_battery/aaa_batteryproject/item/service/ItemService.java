@@ -10,13 +10,18 @@ import com.aaa_battery.aaa_batteryproject.item.repository.ItemRepository;
 @Service
 public class ItemService
 {
-    private final ItemRepository itemRepository;
+    private  final ItemRepository itemRepository;
 
     @Autowired
     public ItemService(ItemRepository itemRepository)
     {
         this.itemRepository = itemRepository;
     }
+
+    public ItemEntity findById(Long itemId) {
+        return itemRepository.findById(itemId).orElse(null);
+    }
+
 
     public ItemEntity addItem(ItemEntity item)
     {

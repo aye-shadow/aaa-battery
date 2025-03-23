@@ -1,5 +1,6 @@
 package com.aaa_battery.aaa_batteryproject.user.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,4 +60,6 @@ public class BorrowerEntity extends UserEntity {
     public void setSubscription(SubscriptionEntity subscription) {
         this.subscription = subscription;
     }
+
+
 }
