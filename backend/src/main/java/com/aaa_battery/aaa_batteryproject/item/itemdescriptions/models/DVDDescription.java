@@ -13,7 +13,7 @@ public class DVDDescription extends ItemDescriptionEntity {
     private String director;
     private Duration duration;
 
-    public String getproducer() {
+    public String getProducer() {
         return producer;
     }
 

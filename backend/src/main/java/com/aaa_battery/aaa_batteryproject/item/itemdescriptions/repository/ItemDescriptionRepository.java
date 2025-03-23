@@ -1,4 +1,4 @@
-package com.aaa_battery.aaa_batteryproject.item.repositories;
+package com.aaa_battery.aaa_batteryproject.item.itemdescriptions.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import com.aaa_battery.aaa_batteryproject.item.itemdescriptions.models.ItemDescriptionEntity;

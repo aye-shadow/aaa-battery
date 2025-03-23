@@ -1,4 +1,4 @@
-package com.aaa_battery.aaa_batteryproject.user.services;
+package com.aaa_battery.aaa_batteryproject.user.service;
 
 import com.aaa_battery.aaa_batteryproject.user.model.UserEntity;
 import com.aaa_battery.aaa_batteryproject.user.repositories.UserRepository;

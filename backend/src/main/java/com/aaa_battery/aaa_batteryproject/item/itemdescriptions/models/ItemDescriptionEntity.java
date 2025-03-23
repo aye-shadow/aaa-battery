@@ -25,6 +25,11 @@ public class ItemDescriptionEntity {
     private int totalCopies;
     private String imageUrl;
 
+    
+    public int getDescriptionId() {
+        return descriptionId;
+    }
+
     public String getType() {
         return type;
     }
@@ -145,5 +150,17 @@ public class ItemDescriptionEntity {
         return Duration.ofHours(time.getHour())
                        .plusMinutes(time.getMinute())
                        .plusSeconds(time.getSecond());
+    }
+    
+    public static String formatDuration(Duration duration) {
+        if (duration == null) {
+            return null;
+        }
+        
+        long hours = duration.toHours();
+        long minutes = duration.toMinutesPart();
+        long seconds = duration.toSecondsPart();
+        
+        return String.format("%02d:%02d:%02d", hours, minutes, seconds);
     }
 }

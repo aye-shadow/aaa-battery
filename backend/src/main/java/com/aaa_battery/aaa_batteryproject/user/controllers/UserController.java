@@ -1,4 +1,4 @@
-package com.aaa_battery.aaa_batteryproject.user.controller;
+package com.aaa_battery.aaa_batteryproject.user.controllers;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,7 +7,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import com.aaa_battery.aaa_batteryproject.user.model.UserEntity;
-import com.aaa_battery.aaa_batteryproject.user.services.UserService;
+import com.aaa_battery.aaa_batteryproject.user.service.UserService;
 
 @RestController
 @RequestMapping("/api/user")

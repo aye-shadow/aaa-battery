@@ -18,6 +18,18 @@ public class ItemEntity {
     @JoinColumn(name = "description_id", referencedColumnName = "descriptionId", nullable = false, unique = false)
     private ItemDescriptionEntity description;
 
+    public int getItemId() {
+        return itemId;
+    }
+
+    public boolean isAvailability() {
+        return availability;
+    }
+
+    public ItemDescriptionEntity getDescription() {
+        return description;
+    }
+
     public void setAvailability(boolean b)
     {
         availability = b;

@@ -1,9 +1,9 @@
-package com.aaa_battery.aaa_batteryproject.item.services;
+package com.aaa_battery.aaa_batteryproject.item.itemdescriptions.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.aaa_battery.aaa_batteryproject.item.itemdescriptions.models.ItemDescriptionEntity;
-import com.aaa_battery.aaa_batteryproject.item.repositories.ItemDescriptionRepository;
+import com.aaa_battery.aaa_batteryproject.item.itemdescriptions.repository.ItemDescriptionRepository;
 
 @Service
 public class ItemDescriptionService {

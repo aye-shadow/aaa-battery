@@ -1,10 +1,10 @@
-package com.aaa_battery.aaa_batteryproject.user.controller;
+package com.aaa_battery.aaa_batteryproject.user.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.aaa_battery.aaa_batteryproject.user.model.UserEntity;
-import com.aaa_battery.aaa_batteryproject.user.services.UserService;
+import com.aaa_battery.aaa_batteryproject.user.service.UserService;
 
 import java.util.List;
 
@@ -19,16 +19,10 @@ public class LibrarianController {
         this.userService = userService;
     }
 
-    @GetMapping("/all_users")
+    @GetMapping("/all-users")
     public ResponseEntity<List<UserEntity>> allUsers() {
         List <UserEntity> users = userService.allUsers();
 
         return ResponseEntity.ok(users);
-    }
-
-    @PostMapping("/add_user")
-    public ResponseEntity<UserEntity> addUser(@RequestBody UserEntity user) {
-       // do nothign, this is an example endpoint
-        return ResponseEntity.ok(user);
     }
 }
