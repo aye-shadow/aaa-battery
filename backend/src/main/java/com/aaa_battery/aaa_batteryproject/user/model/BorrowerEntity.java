@@ -23,7 +23,7 @@ public class BorrowerEntity extends UserEntity {
     @OneToMany(mappedBy = "borrower", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BorrowEntity> borrowedItems = new ArrayList<>();
 
-    @OneToMany(mappedBy = "requestor", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "requestor", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<RequestEntity> requests = new ArrayList<>();
 
     @OneToOne(mappedBy = "borrower", cascade = CascadeType.ALL, orphanRemoval = true)
