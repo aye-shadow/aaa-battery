@@ -23,6 +23,7 @@ public class BorrowEntity {
     
     private Date borrowDate;
     private Date returnDate;
+    private Date returnedOn;
 
     public enum BorrowStatus {
         BORROWED,
@@ -35,6 +36,7 @@ public class BorrowEntity {
         this.status = BorrowStatus.BORROWED; // Default status when a borrow request is created
         this.borrowDate = new Date(); // Set current date as borrow date
         this.returnDate = new Date(borrowDate.getTime() + (14 * 24 * 60 * 60 * 1000)); // Set return date to 14 days later
+        this.returnedOn = null; // Initially, the item is not returned
     }
 
     // Getter for id
@@ -86,6 +88,16 @@ public class BorrowEntity {
     // Setter for returnDate
     public void setReturnDate(Date returnDate) {
         this.returnDate = returnDate;
+    }
+
+    // Getter for returnedOn
+    public Date getReturnedOn() {
+        return returnedOn;
+    }
+
+    // Setter for returnedOn
+    public void setReturnedOn(Date returnedOn) {
+        this.returnedOn = returnedOn;
     }
 
     public BorrowStatus getStatus() {

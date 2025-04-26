@@ -122,8 +122,8 @@ public class BorrowController {
         }
     }
 
-    @PostMapping("/borrows/{id}")
-    public ResponseEntity<?> returnBorrow(@PathVariable Long id) {
+    @PostMapping("/return")
+    public ResponseEntity<?> returnBorrow(@RequestParam Long id) { // Changed from @PathVariable to @RequestParam
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             BorrowerEntity currentBorrower = (BorrowerEntity) authentication.getPrincipal();
@@ -150,8 +150,8 @@ public class BorrowController {
 
             // Mark the borrow as returned
             borrow.setStatus(BorrowEntity.BorrowStatus.RETURNED);
-            borrow.setReturnDate(Date.from(ZonedDateTime.now(ZoneId.of("UTC")).toInstant()));
-            
+            borrow.setReturnedOn(Date.from(ZonedDateTime.now(ZoneId.of("UTC")).toInstant()));
+
             // Save changes
             borrowService.saveReturn(borrow, item);
 
