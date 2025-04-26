@@ -48,9 +48,6 @@ public class BorrowController {
 
             Long itemDescriptionId = ((Number) borrowData.get("itemId")).longValue();
 
-            Date borrowDate = new Date(); // get current date and time
-            Date returnDate = Date.from(borrowDate.toInstant().plusSeconds(14 * 24 * 60 * 60)); // 14 days in seconds
-
             // Fetch borrower
             BorrowerEntity borrower = borrowerService.findBorrowerById(userId);
             if (borrower == null) {
@@ -72,8 +69,6 @@ public class BorrowController {
             BorrowEntity borrow = new BorrowEntity();
             borrow.setBorrower(borrower);
             borrow.setItem(item);
-            borrow.setBorrowDate(borrowDate);
-            borrow.setReturnDate(returnDate);
 
             // Add borrow to borrower
             borrower.addBorrowedItem(borrow);
@@ -97,6 +92,7 @@ public class BorrowController {
                             : "Unknown", // Fallback for an unknown type
                     "type", item.getDescription().getType()
             ));
+            response.put("borrowStatus", borrow.getStatus());
             response.put("borrowDate", borrow.getBorrowDate());
             response.put("returnDate", borrow.getReturnDate());
 
@@ -123,6 +119,46 @@ public class BorrowController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Failed to retrieve borrows: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/borrows/{id}")
+    public ResponseEntity<?> returnBorrow(@PathVariable Long id) {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            BorrowerEntity currentBorrower = (BorrowerEntity) authentication.getPrincipal();
+
+            Long userId = ((Number) currentBorrower.getId()).longValue();
+            currentBorrower = borrowerService.findBorrowerById(userId);
+            if (currentBorrower == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Borrower not found");
+            }
+
+            Optional<BorrowEntity> optionalBorrow = borrowService.findById(id);
+            if (optionalBorrow.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Borrow not found");
+            }
+
+            BorrowEntity borrow = optionalBorrow.get();
+            if (!borrow.getBorrower().getId().equals(currentBorrower.getId())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You do not have permission to return this item");
+            }
+
+            // Mark the item as available again
+            ItemEntity item = borrow.getItem();
+            item.setAvailability(true);
+
+            // Mark the borrow as returned
+            borrow.setStatus(BorrowEntity.BorrowStatus.RETURNED);
+            borrow.setReturnDate(Date.from(ZonedDateTime.now(ZoneId.of("UTC")).toInstant()));
+            
+            // Save changes
+            borrowService.saveReturn(borrow, item);
+
+            return ResponseEntity.ok(Map.of("message", "Item returned successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to return borrow: " + e.getMessage());
         }
     }
 }

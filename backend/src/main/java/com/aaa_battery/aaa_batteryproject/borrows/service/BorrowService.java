@@ -2,6 +2,8 @@ package com.aaa_battery.aaa_batteryproject.borrows.service;
 
 import com.aaa_battery.aaa_batteryproject.borrows.model.BorrowEntity;
 import com.aaa_battery.aaa_batteryproject.borrows.repository.BorrowRepository;
+import com.aaa_battery.aaa_batteryproject.item.model.ItemEntity;
+
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -28,5 +30,12 @@ public class BorrowService
     public List<BorrowEntity> findByBorrowerId(Long borrowerId) {
         return borrowRepository.findByBorrowerId(borrowerId); // Get borrow records for a borrower
     }
+
+    public void saveReturn(BorrowEntity borrow, ItemEntity item) {
+        borrow.setItem(item); // Set the item for the borrow record
+        borrowRepository.save(borrow); // Save the updated borrow record
+    }
+
+
 }
 
