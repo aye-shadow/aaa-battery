@@ -41,53 +41,76 @@ public class AuthenticationController {
             @RequestBody LoginUserDto loginUserDto, 
             HttpServletRequest request, 
             HttpServletResponse response) {
-        // Check if the "jwt" cookie already exists
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if ("jwt".equals(cookie.getName())) {
-                    // Return the existing JWT token and its expiration time
-                    LoginResponse alreadyLoggedInResponse = new LoginResponse()
-                            .setToken(cookie.getValue())
-                            .setExpiresIn(jwtService.getExpirationTime()) // Assuming this retrieves the correct expiration time
-                            .setMessage("User already logged in");
-                    return ResponseEntity.ok(alreadyLoggedInResponse);
+        try {
+            // Check if the "jwt" cookie already exists
+            Cookie[] cookies = request.getCookies();
+            if (cookies != null) {
+                for (Cookie cookie : cookies) {
+                    if ("jwt".equals(cookie.getName())) {
+                        // Return the existing JWT token and its expiration time
+                        LoginResponse alreadyLoggedInResponse = new LoginResponse()
+                                .setToken(cookie.getValue())
+                                .setExpiresIn(jwtService.getExpirationTime()) // Assuming this retrieves the correct expiration time
+                                .setMessage("User already logged in");
+                        return ResponseEntity.ok(alreadyLoggedInResponse);
+                    }
                 }
             }
-        }
 
-        // Authenticate the user
-        UserEntity authenticatedUser = authenticationService.authenticate(loginUserDto);
+            // Authenticate the user
+            UserEntity authenticatedUser = authenticationService.authenticate(loginUserDto);
 
-        // Check if the user's role matches the expected role
-        if (!authenticatedUser.getRole().equals(loginUserDto.getRole())) {
-            return ResponseEntity.status(403).body(
+            if (authenticatedUser == null) {
+                return ResponseEntity.status(401).body(
+                        new LoginResponse()
+                                .setMessage("Invalid credentials. Authentication failed.")
+                );
+            }
+
+            // Check if the user's role matches the expected role
+            if (!authenticatedUser.getRole().equals(loginUserDto.getRole())) {
+                return ResponseEntity.status(403).body(
+                        new LoginResponse()
+                                .setMessage("Invalid role for the provided credentials")
+                );
+            }
+
+            // Generate JWT token
+            String jwtToken = jwtService.generateToken(authenticatedUser);
+
+            if (jwtToken == null || jwtToken.isEmpty()) {
+                return ResponseEntity.status(500).body(
+                        new LoginResponse()
+                                .setMessage("Failed to generate JWT token")
+                );
+            }
+
+            // Set the JWT token as a cookie
+            Cookie cookie = new Cookie("jwt", jwtToken);
+            cookie.setHttpOnly(true);
+            cookie.setMaxAge((int) jwtService.getExpirationTime());
+            cookie.setPath("/");
+            cookie.setSecure(true);
+
+            response.addCookie(cookie);
+
+            // Return the login response
+            LoginResponse loginResponse = new LoginResponse()
+                    .setToken(jwtToken)
+                    .setExpiresIn(jwtService.getExpirationTime())
+                    .setMessage("Login successful");
+
+            return ResponseEntity.ok(loginResponse);
+        } catch (Exception e) {
+            // Log the error (if logging is set up) and return a generic error message
+            e.printStackTrace(); // Replace with proper logging in production
+            return ResponseEntity.status(500).body(
                     new LoginResponse()
-                            .setMessage("Invalid role for the provided credentials")
+                            .setMessage("An unexpected error occurred during login")
             );
         }
-
-        // Generate JWT token
-        String jwtToken = jwtService.generateToken(authenticatedUser);
-
-        // Set the JWT token as a cookie
-        Cookie cookie = new Cookie("jwt", jwtToken);
-        cookie.setHttpOnly(true);
-        cookie.setMaxAge((int) jwtService.getExpirationTime());
-        cookie.setPath("/");
-        cookie.setSecure(true);
-
-        response.addCookie(cookie);
-
-        // Return the login response
-        LoginResponse loginResponse = new LoginResponse()
-                .setToken(jwtToken)
-                .setExpiresIn(jwtService.getExpirationTime())
-                .setMessage("Login successful");
-
-        return ResponseEntity.ok(loginResponse);
     }
-
+    
     @PostMapping("/logout")
     public ResponseEntity<String> logout(HttpServletRequest request, HttpServletResponse response) {
         // Check if the "jwt" cookie exists
