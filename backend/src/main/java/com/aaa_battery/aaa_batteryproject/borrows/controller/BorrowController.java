@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -20,11 +21,9 @@ import com.aaa_battery.aaa_batteryproject.item.itemdescriptions.models.BookDescr
 import org.springframework.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 
 @RestController
 @RequestMapping("/api/borrower")
@@ -43,14 +42,14 @@ public class BorrowController {
     @PostMapping("/borrows")
     public ResponseEntity<?> submitBorrowRequest(@RequestBody Map<String, Object> borrowData) {
         try {
-            Long userId = ((Number) borrowData.get("userId")).longValue();
-            Long itemDescriptionId = ((Number) borrowData.get("itemId")).longValue();
-            LocalDate borrowLocalDate = LocalDate.parse((String) borrowData.get("borrowDate"));
-            LocalDate returnLocalDate = LocalDate.parse((String) borrowData.get("returnDate"));
-            ZonedDateTime borrowDate = borrowLocalDate.atStartOfDay(ZoneId.systemDefault());
-            ZonedDateTime returnDate = returnLocalDate.atStartOfDay(ZoneId.systemDefault());
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            BorrowerEntity currentBorrower = (BorrowerEntity) authentication.getPrincipal();
+            Long userId = ((Number) currentBorrower.getId()).longValue();
 
-            String notes = (String) borrowData.get("notes");
+            Long itemDescriptionId = ((Number) borrowData.get("itemId")).longValue();
+
+            Date borrowDate = new Date(); // get current date and time
+            Date returnDate = Date.from(borrowDate.toInstant().plusSeconds(14 * 24 * 60 * 60)); // 14 days in seconds
 
             // Fetch borrower
             BorrowerEntity borrower = borrowerService.findBorrowerById(userId);
@@ -68,24 +67,20 @@ public class BorrowController {
             // Retrieve the item and mark it as unavailable
             ItemEntity item = optionalItem.get();
             item.setAvailability(false);
-            itemService.addItem(item);  // Save the updated item state
 
             // Create borrow request
             BorrowEntity borrow = new BorrowEntity();
             borrow.setBorrower(borrower);
             borrow.setItem(item);
-            borrow.setRequestDate(ZonedDateTime.now());
             borrow.setBorrowDate(borrowDate);
             borrow.setReturnDate(returnDate);
-            borrow.setStatus("pending");
-            borrow.setNotes(notes);
 
-
+            // Add borrow to borrower
             borrower.addBorrowedItem(borrow);
-            borrowerService.saveBorrower(borrower);
 
-            // Save borrow request
+            // Save borrow request (cascades to item and borrower if configured)
             borrowService.saveBorrowRequest(borrow);
+
             // Prepare response
             Map<String, Object> response = new HashMap<>();
             response.put("id", borrow.getId());
@@ -102,18 +97,32 @@ public class BorrowController {
                             : "Unknown", // Fallback for an unknown type
                     "type", item.getDescription().getType()
             ));
-
-            response.put("requestDate", borrow.getRequestDate());
             response.put("borrowDate", borrow.getBorrowDate());
             response.put("returnDate", borrow.getReturnDate());
-            response.put("status", borrow.getStatus());
-            response.put("notes", borrow.getNotes());
 
             return ResponseEntity.ok(Map.of("data", response));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to submit borrow request: " + e.getMessage());
+                    .body("Failed to submit borrow: " + e.getMessage());
         }
     }
 
+    @GetMapping("/my-borrows")
+    public ResponseEntity<?> getMyBorrows() {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            BorrowerEntity currentBorrower = (BorrowerEntity) authentication.getPrincipal();
+
+            Long userId = ((Number) currentBorrower.getId()).longValue();
+            currentBorrower = borrowerService.findBorrowerById(userId);
+            if (currentBorrower == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Borrower not found");
+            }
+
+            return ResponseEntity.ok(currentBorrower.getBorrowedItems());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to retrieve borrows: " + e.getMessage());
+        }
+    }
 }

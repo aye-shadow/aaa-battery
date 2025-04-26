@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.aaa_battery.aaa_batteryproject.item.model.ItemEntity;
 import com.aaa_battery.aaa_batteryproject.item.repository.ItemRepository;
-import org.springframework.data.domain.PageRequest;
 
 @Service
 public class ItemService {

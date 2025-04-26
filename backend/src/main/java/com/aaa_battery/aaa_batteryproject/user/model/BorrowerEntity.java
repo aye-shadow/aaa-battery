@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.aaa_battery.aaa_batteryproject.borrows.model.BorrowEntity;
 import com.aaa_battery.aaa_batteryproject.subscription.model.SubscriptionEntity;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -20,6 +21,7 @@ import jakarta.persistence.Table;
 public class BorrowerEntity extends UserEntity {
 
     @OneToMany(mappedBy = "borrower", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<BorrowEntity> borrowedItems = new ArrayList<>();
 
     @OneToOne(mappedBy = "borrower", cascade = CascadeType.ALL, orphanRemoval = true)
