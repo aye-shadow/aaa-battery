@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import com.aaa_battery.aaa_batteryproject.user.model.BorrowerEntity;
 import com.aaa_battery.aaa_batteryproject.user.services.BorrowerService;
 import com.aaa_battery.aaa_batteryproject.requests.dto.RequestDTO;
+import com.aaa_battery.aaa_batteryproject.requests.dto.RequestResponseDTO;
+import com.aaa_battery.aaa_batteryproject.requests.dto.RequestorDTO;
 import com.aaa_battery.aaa_batteryproject.requests.model.RequestEntity;
 import com.aaa_battery.aaa_batteryproject.requests.service.RequestService;
 
@@ -56,21 +58,45 @@ public class RequestController {
     }
 
     @GetMapping("/librarian/view-requests")
-    public ResponseEntity<List<RequestEntity>> viewRequests() {
+    public ResponseEntity<List<RequestResponseDTO>> viewRequests() {
         try {
             // Fetch all requests using the RequestService
             List<RequestEntity> requests = requestService.getAllRequests();
 
-            // Return the list of requests in the response
-            return ResponseEntity.ok(requests);
+            // Map RequestEntity to RequestResponseDTO
+            List<RequestResponseDTO> responseDTOs = requests.stream().map(request -> {
+                RequestResponseDTO dto = new RequestResponseDTO();
+                dto.setId(request.getId());
+                dto.setItemType(request.getItemType());
+                dto.setItemName(request.getItemName());
+                dto.setItemBy(request.getItemBy());
+                dto.setStatus(request.getStatus());
+                dto.setRequestDate(request.getRequestDate());
+                dto.setNotes(request.getNotes());
+
+                // Map BorrowerEntity to RequestorDTO
+                BorrowerEntity requestor = request.getRequestor();
+                if (requestor != null) {
+                    RequestorDTO requestorDTO = new RequestorDTO();
+                    requestorDTO.setId(requestor.getId());
+                    requestorDTO.setFullName(requestor.getFullName());
+                    requestorDTO.setEmail(requestor.getEmail());
+                    dto.setRequestor(requestorDTO);
+                }
+
+                return dto;
+            }).toList();
+
+            // Return the list of DTOs in the response
+            return ResponseEntity.ok(responseDTOs);
         } catch (Exception e) {
             // Handle any exceptions and return an error response
             return ResponseEntity.status(500).body(null);
         }
     }
 
-    @PostMapping("/librarian/handle-request/{requestId}")
-    public ResponseEntity<String> handleRequest(@PathVariable Long requestId, @RequestParam String status) {
+    @PostMapping("/librarian/handle-request")
+    public ResponseEntity<String> handleRequest(@RequestParam Long requestId, @RequestParam String status) {
         try {
             // Convert the status string to RequestEntity.RequestStatus enum
             RequestEntity.RequestStatus requestStatus = RequestEntity.RequestStatus.valueOf(status.toUpperCase());
