@@ -90,8 +90,9 @@ public class AuthenticationController {
             cookie.setHttpOnly(true);
             cookie.setMaxAge((int) jwtService.getExpirationTime());
             cookie.setPath("/");
-            cookie.setSecure(true);
-
+            cookie.setSecure(false);
+            cookie.setAttribute("SameSite", "None");
+            
             response.addCookie(cookie);
 
             // Return the login response
@@ -129,7 +130,8 @@ public class AuthenticationController {
         cookie.setHttpOnly(true);
         cookie.setMaxAge(0);
         cookie.setPath("/");
-        cookie.setSecure(true);
+        cookie.setSecure(false);
+        cookie.setAttribute("SameSite", "None");
 
         response.addCookie(cookie);
 

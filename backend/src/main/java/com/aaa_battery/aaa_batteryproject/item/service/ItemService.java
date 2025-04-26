@@ -33,4 +33,8 @@ public class ItemService {
         return items.isEmpty() ? Optional.empty() : Optional.of(items.get(0)); // Get first item
     }
 
+    public List<ItemEntity> getItemsByDescriptionId(Integer descriptionId) {
+        return itemRepository.findByDescriptionDescriptionId(descriptionId);
+    }
+
 }
