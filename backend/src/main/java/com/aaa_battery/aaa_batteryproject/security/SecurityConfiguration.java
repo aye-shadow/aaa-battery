@@ -45,10 +45,10 @@ public class SecurityConfiguration {
                 return config;
             }))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/actuator/mappings", "/api/auth/**").permitAll()
+                .requestMatchers("/", "/actuator/mappings", "/api/auth/**", "/api/items/users/**").permitAll()
                 .requestMatchers("/api/librarian/**", "/api/items/librarian/**", "/api/request/librarian/**").hasRole("LIBRARIAN")
                 .requestMatchers("/api/items/borrower/**", "/api/request/borrower/**", "/api/subscribe/borrower/**").hasRole("BORROWER")
-                .requestMatchers("/api/user/**", "/api/items/users/**").authenticated()
+                .requestMatchers("/api/user/**").authenticated()
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session

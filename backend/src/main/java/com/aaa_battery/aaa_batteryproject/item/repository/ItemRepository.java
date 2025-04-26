@@ -12,5 +12,7 @@ public interface ItemRepository extends JpaRepository<ItemEntity, Long>
     @Query("SELECT i FROM ItemEntity i WHERE i.description.id = :descriptionId AND i.availability = true ORDER BY i.itemId ASC")
     List<ItemEntity> findAvailableItemsByDescription(@Param("descriptionId") Long descriptionId);
 
+    List<ItemEntity> findByDescriptionDescriptionId(Integer descriptionId);
+
 }
 

@@ -153,5 +153,16 @@ public class ItemController {
                     .body(null);
         }
     }
+
+    @GetMapping("/users/view-item")
+    public ResponseEntity<List<ItemEntity>> viewItem(@RequestParam Integer descriptionId) {
+        try {
+            List<ItemEntity> items = itemService.getItemsByDescriptionId(descriptionId);
+            return ResponseEntity.ok(items);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
 }
 
