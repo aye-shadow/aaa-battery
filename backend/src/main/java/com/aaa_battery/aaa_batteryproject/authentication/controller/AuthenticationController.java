@@ -56,10 +56,21 @@ public class AuthenticationController {
             }
         }
 
+        // Authenticate the user
         UserEntity authenticatedUser = authenticationService.authenticate(loginUserDto);
 
+        // Check if the user's role matches the expected role
+        if (!authenticatedUser.getRole().equals(loginUserDto.getRole())) {
+            return ResponseEntity.status(403).body(
+                    new LoginResponse()
+                            .setMessage("Invalid role for the provided credentials")
+            );
+        }
+
+        // Generate JWT token
         String jwtToken = jwtService.generateToken(authenticatedUser);
 
+        // Set the JWT token as a cookie
         Cookie cookie = new Cookie("jwt", jwtToken);
         cookie.setHttpOnly(true);
         cookie.setMaxAge((int) jwtService.getExpirationTime());
@@ -68,6 +79,7 @@ public class AuthenticationController {
 
         response.addCookie(cookie);
 
+        // Return the login response
         LoginResponse loginResponse = new LoginResponse()
                 .setToken(jwtToken)
                 .setExpiresIn(jwtService.getExpirationTime())
