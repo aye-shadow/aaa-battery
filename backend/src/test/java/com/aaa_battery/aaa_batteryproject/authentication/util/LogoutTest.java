@@ -1,4 +1,4 @@
-package com.aaa_battery.aaa_batteryproject.util;
+package com.aaa_battery.aaa_batteryproject.authentication.util;
 
 import org.springframework.test.web.servlet.MockMvc;
 

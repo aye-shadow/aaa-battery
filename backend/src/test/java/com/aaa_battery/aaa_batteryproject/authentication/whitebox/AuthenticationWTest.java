@@ -2,12 +2,12 @@
 package com.aaa_battery.aaa_batteryproject.authentication.whitebox;
 
 import com.aaa_battery.aaa_batteryproject.authentication.service.AuthenticationService;
+import com.aaa_battery.aaa_batteryproject.authentication.util.Credentials;
+import com.aaa_battery.aaa_batteryproject.authentication.util.LoginTest;
+import com.aaa_battery.aaa_batteryproject.authentication.util.LogoutTest;
 import com.aaa_battery.aaa_batteryproject.security.jwt.services.JwtService;
 import com.aaa_battery.aaa_batteryproject.user.dtos.LoginUserDto;
 import com.aaa_battery.aaa_batteryproject.user.roles.Role;
-import com.aaa_battery.aaa_batteryproject.util.Credentials;
-import com.aaa_battery.aaa_batteryproject.util.LoginTest;
-import com.aaa_battery.aaa_batteryproject.util.LogoutTest;
 
 import static org.mockito.ArgumentMatchers.any;
 
@@ -113,6 +113,18 @@ public class AuthenticationWTest {
         LoginTest.performLoginWithNoJwt(
             authenticationService, jwtService, mockMvc, 
             email, password, role
+            );
+    }
+
+    @Test
+    void testLogin_InvalidRoleFromFrontend() throws Exception {
+        String email = Credentials.BORROWER.getEmail();
+        String password = Credentials.BORROWER.getPassword();
+        String invalidRole = "ADMIN";
+
+        LoginTest.performLoginWithInvalidRole(
+            authenticationService, jwtService, mockMvc, 
+            email, password, invalidRole
             );
     }
 }

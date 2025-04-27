@@ -105,8 +105,13 @@ public class UserEntity implements UserDetails {
         return fullName;
     }
 
-    public UserEntity setUsername(String fullName) {
+    public UserEntity setFullName(String fullName) {
         this.fullName = fullName;
+        return this;
+    }
+
+    public UserEntity setUsername(String email) {
+        this.email = email;
         return this;
     }
 
@@ -134,6 +139,24 @@ public class UserEntity implements UserDetails {
 
     public UserEntity setPassword(String password) {
         this.password = password;
+        return this;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public UserEntity setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+        return this;
+    }
+
+    public Date getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public UserEntity setUpdatedAt(Date updatedAt) {
+        this.updatedAt = updatedAt;
         return this;
     }
 }
