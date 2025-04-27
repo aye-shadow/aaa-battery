@@ -70,8 +70,15 @@ public class AuthenticationService {
                         input.getPassword()
                 )
         );
-
-        return userRepository.findByEmail(input.getEmail())
+    
+        UserEntity user = userRepository.findByEmail(input.getEmail())
                 .orElseThrow();
+    
+        // Validate the role
+        if (!user.getRole().equals(input.getRole())) {
+            throw new IllegalArgumentException("Invalid role for the provided credentials");
+        }
+    
+        return user;
     }
 }

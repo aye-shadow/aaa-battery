@@ -50,9 +50,9 @@ public class AuthenticationController {
                         // Return the existing JWT token and its expiration time
                         LoginResponse alreadyLoggedInResponse = new LoginResponse()
                                 .setToken(cookie.getValue())
-                                .setExpiresIn(jwtService.getExpirationTime()) // Assuming this retrieves the correct expiration time
+                                .setExpiresIn(jwtService.getExpirationTime()) 
                                 .setMessage("User already logged in");
-                        return ResponseEntity.ok(alreadyLoggedInResponse);
+                        return ResponseEntity.status(403).body(alreadyLoggedInResponse);
                     }
                 }
             }
@@ -67,13 +67,14 @@ public class AuthenticationController {
                 );
             }
 
-            // Check if the user's role matches the expected role
-            if (!authenticatedUser.getRole().equals(loginUserDto.getRole())) {
-                return ResponseEntity.status(403).body(
-                        new LoginResponse()
-                                .setMessage("Invalid role for the provided credentials")
-                );
-            }
+            // Commenting this out because the authenticate method already checks for the role
+            // // Check if the user's role matches the expected role
+            // if (!authenticatedUser.getRole().equals(loginUserDto.getRole())) {
+            //     return ResponseEntity.status(403).body(
+            //             new LoginResponse()
+            //                     .setMessage("Invalid role for the provided credentials")
+            //     );
+            // }
 
             // Generate JWT token
             String jwtToken = jwtService.generateToken(authenticatedUser);
@@ -97,13 +98,21 @@ public class AuthenticationController {
 
             // Return the login response
             LoginResponse loginResponse = new LoginResponse()
-                    .setToken(jwtToken)
-                    .setExpiresIn(jwtService.getExpirationTime())
-                    .setMessage("Login successful");
+            .setToken(jwtToken)
+            .setExpiresIn(jwtService.getExpirationTime())
+            .setMessage("Login successful")
+            .setEmail(authenticatedUser.getEmail())
+            .setRole(authenticatedUser.getRole());
 
             return ResponseEntity.ok(loginResponse);
+        } catch (IllegalArgumentException e) {
+            // Handle invalid role exception
+            return ResponseEntity.status(403).body(
+                    new LoginResponse()
+                            .setMessage(e.getMessage())
+            );
         } catch (Exception e) {
-            // Log the error (if logging is set up) and return a generic error message
+            // Handle other exceptions
             e.printStackTrace(); // Replace with proper logging in production
             return ResponseEntity.status(500).body(
                     new LoginResponse()
@@ -123,6 +132,10 @@ public class AuthenticationController {
                 .anyMatch(cookie -> "jwt".equals(cookie.getName()));
         if (!jwtCookieFound) {
             return ResponseEntity.status(401).body("JWT cookie not found in the request: no user logged in");
+        }
+
+        if (cookies == null || !jwtCookieFound) {
+            return ResponseEntity.status(401).body("No user logged in");
         }
 
         // Expire the cookie
