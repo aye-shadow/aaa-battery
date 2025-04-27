@@ -38,9 +38,10 @@ public class SecurityConfiguration {
                     "http://localhost:3000",
                     "https://aaa-battery.vercel.app",
                     "https://aaa-battery-spring-backend-894699792c03.herokuapp.com"
-                )); 
-                config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE")); // Ensure no trailing comma
-                config.setAllowedHeaders(List.of("*")); // Ensure no trailing comma
+                ));
+                config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
+                config.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With"));
+                config.setExposedHeaders(List.of("Authorization")); // Expose headers if needed
                 config.setAllowCredentials(true); // Allows cookies
                 return config;
             }))

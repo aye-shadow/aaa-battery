@@ -113,18 +113,21 @@ public class AuthenticationController {
     
     @PostMapping("/logout")
     public ResponseEntity<String> logout(HttpServletRequest request, HttpServletResponse response) {
-        // Check if the "jwt" cookie exists
         Cookie[] cookies = request.getCookies();
-        if (cookies == null || 
-            java.util.Arrays.stream(cookies).noneMatch(cookie -> "jwt".equals(cookie.getName()))) {
-            // Return an error response with a message if no "jwt" cookie is found
-            return ResponseEntity.status(401).body("No user logged in");
+        if (cookies == null) {
+            return ResponseEntity.status(401).body("No cookies found in the request; no user logged in");
         }
 
-        // Create a cookie with the same name but expired
+        boolean jwtCookieFound = java.util.Arrays.stream(cookies)
+                .anyMatch(cookie -> "jwt".equals(cookie.getName()));
+        if (!jwtCookieFound) {
+            return ResponseEntity.status(401).body("JWT cookie not found in the request: no user logged in");
+        }
+
+        // Expire the cookie
         Cookie cookie = new Cookie("jwt", "");
         cookie.setHttpOnly(true);
-        cookie.setMaxAge(0); // Expire immediately
+        cookie.setMaxAge(0);
         cookie.setPath("/");
         cookie.setSecure(true);
 
