@@ -10,5 +10,8 @@ fi
 # Set the Spring profile
 export SPRING_PROFILES_ACTIVE=local
 
+# Run Maven tests
+mvn test
+
 # Run Maven spring-boot:run
 mvn spring-boot:run
