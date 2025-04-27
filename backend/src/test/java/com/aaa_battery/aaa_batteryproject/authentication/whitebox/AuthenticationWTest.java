@@ -5,8 +5,11 @@ import com.aaa_battery.aaa_batteryproject.authentication.service.AuthenticationS
 import com.aaa_battery.aaa_batteryproject.authentication.util.Credentials;
 import com.aaa_battery.aaa_batteryproject.authentication.util.LoginTest;
 import com.aaa_battery.aaa_batteryproject.authentication.util.LogoutTest;
+import com.aaa_battery.aaa_batteryproject.authentication.util.RegisterTest;
 import com.aaa_battery.aaa_batteryproject.security.jwt.services.JwtService;
 import com.aaa_battery.aaa_batteryproject.user.dtos.LoginUserDto;
+import com.aaa_battery.aaa_batteryproject.user.model.BorrowerEntity;
+import com.aaa_battery.aaa_batteryproject.user.model.UserEntity;
 import com.aaa_battery.aaa_batteryproject.user.roles.Role;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -126,5 +129,21 @@ public class AuthenticationWTest {
             authenticationService, jwtService, mockMvc, 
             email, password, invalidRole
             );
+    }
+
+    @Test
+    void testRegister_InvalidRoleFromFrontend() throws Exception {
+        String email = Credentials.NEW_BORROWER.getEmail();
+        String password = Credentials.NEW_BORROWER.getPassword();
+
+        UserEntity newBorrower = new BorrowerEntity()
+            .setEmail(email)
+            .setPassword(password) 
+            .setUsername(email)
+            .setFullName(Credentials.NEW_BORROWER.getFullName())
+            .setCreatedAt(new java.util.Date())
+            .setUpdatedAt(new java.util.Date());
+
+        RegisterTest.registerWithMissingRole(authenticationService, mockMvc, newBorrower, "Password is required");
     }
 }

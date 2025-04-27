@@ -43,6 +43,9 @@ public class AuthenticationService {
         if (input.getPassword() == null || input.getPassword().isEmpty()) {
             throw new IllegalArgumentException("Password is required");
         }
+        if (input.getRole() == null || !isValidRole(input.getRole().name())) {
+            throw new IllegalArgumentException("Invalid role");
+        }
 
         UserEntity user;
         if (input.getRole().equals(Role.BORROWER)) {

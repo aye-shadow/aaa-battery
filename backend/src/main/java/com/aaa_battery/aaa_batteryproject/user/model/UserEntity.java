@@ -159,4 +159,9 @@ public class UserEntity implements UserDetails {
         this.updatedAt = updatedAt;
         return this;
     }
+
+    public UserEntity setRole(String role) {
+        this.role = Role.valueOf(role);
+        return this;
+    }
 }
