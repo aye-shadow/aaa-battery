@@ -1,114 +1,113 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import { ArrowLeft, BookOpen, Check, User, LogOut } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
-import { borrowAPI } from "@/lib/api"
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { ArrowLeft, BookOpen, Check, User, LogOut } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { borrowAPI } from "@/lib/api";
 
 export default function BorrowerReturnsPage() {
-  const { toast } = useToast()
-  const [borrowedItems, setBorrowedItems] = useState([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [returningItems, setReturningItems] = useState<number[]>([])
-  const [returnedItems, setReturnedItems] = useState<number[]>([])
+  const { toast } = useToast();
+  const [borrowedItems, setBorrowedItems] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [returningItems, setReturningItems] = useState<number[]>([]);
+  const [returnedItems, setReturnedItems] = useState<number[]>([]);
+  const [showSuccessPopup, setShowSuccessPopup] = useState<{
+    name: string;
+    imageUrl: string;
+  } | null>(null);
 
-  // Fetch borrowed items when component mounts
   useEffect(() => {
     const fetchBorrowedItems = async () => {
-      setIsLoading(true)
+      setIsLoading(true);
 
-      // Show API notification for GET request
       toast({
         title: "API Request",
-        description: "GET /api/borrows/user - Fetching borrowed items...",
+        description: "GET /api/borrower/my-borrows - Fetching borrowed items...",
         variant: "default",
-      })
+      });
 
       try {
-        // Use the borrowAPI to get borrowed items
-        const response = await borrowAPI.getBorrowedItems(101) // Assuming user ID 101
+        const data = await borrowAPI.getBorrowedItems();
+        setBorrowedItems(data);
 
-        // Update state with the fetched data
-        setBorrowedItems(response.data)
-
-        // Show success notification
         toast({
           title: "API Success",
-          description: `Loaded ${response.data.length} borrowed items`,
+          description: `Loaded ${data.length} borrowed items`,
           variant: "success",
-        })
+        });
       } catch (error) {
-        console.error("Error fetching borrowed items:", error)
-
-        // Show error notification
+        console.error("Error fetching borrowed items:", error);
         toast({
           title: "API Error",
           description: `Failed to fetch borrowed items: ${error instanceof Error ? error.message : "Unknown error"}`,
           variant: "destructive",
-        })
+        });
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
+    };
 
-    fetchBorrowedItems()
-  }, [toast])
+    fetchBorrowedItems();
+  }, [toast]);
 
-  // Handle returning an item
-  const handleReturnItem = async (itemId: number) => {
-    // Add item to returning state to show loading
-    setReturningItems((prev) => [...prev, itemId])
+  const handleReturnItem = async (borrowId: number) => {
+    setReturningItems((prev) => [...prev, borrowId]);
 
-    // Show API notification for POST request
     toast({
       title: "API Request",
-      description: `POST /api/borrows/${itemId}/return - Returning item...`,
+      description: `POST /api/borrower/return?id=${borrowId} - Returning item...`,
       variant: "default",
-    })
+    });
 
     try {
-      // Use the borrowAPI to return the item
-      await borrowAPI.returnItem(itemId)
+      const response = await borrowAPI.returnItem(borrowId);
+      console.log("✅ Return Response:", response);
 
-      // Add item to returned state
-      setReturnedItems((prev) => [...prev, itemId])
+      const returnedItem = borrowedItems.find((item) => item.id === borrowId);
+      if (returnedItem) {
+        setShowSuccessPopup({
+          name: returnedItem.item.description.itemName,
+          imageUrl: returnedItem.item.description.imageUrl,
+        });
 
-      // Show success notification
+        setTimeout(() => {
+          setShowSuccessPopup(null);
+        }, 5000);
+      }
+
+      setReturnedItems((prev) => [...prev, borrowId]);
+
       toast({
         title: "API Success",
         description: "Item returned successfully",
         variant: "success",
-      })
+      });
 
-      // If all items are returned, show a final success message
       if (returnedItems.length + 1 === borrowedItems.length) {
         toast({
           title: "All Items Returned",
           description: "Thank you for returning all your borrowed items.",
           variant: "success",
-        })
+        });
       }
     } catch (error) {
-      console.error("Error returning item:", error)
-
-      // Show error notification
+      console.error("Error returning item:", error);
       toast({
         title: "API Error",
         description: `Failed to return item: ${error instanceof Error ? error.message : "Unknown error"}`,
         variant: "destructive",
-      })
+      });
     } finally {
-      // Remove item from returning state
-      setReturningItems((prev) => prev.filter((id) => id !== itemId))
+      setReturningItems((prev) => prev.filter((id) => id !== borrowId));
     }
-  }
+  };
 
-  // Filter out already returned items
-  const activeItems = borrowedItems.filter((item: any) => !returnedItems.includes(item.id))
+  const activeItems = borrowedItems.filter((item) => item.status !== "RETURNED" && !returnedItems.includes(item.id));
+  const finishedItems = borrowedItems.filter((item) => item.status === "RETURNED" || returnedItems.includes(item.id));
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 relative">
       {/* Header */}
       <header className="bg-white border-b border-[#39FF14]/30 sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -116,7 +115,6 @@ export default function BorrowerReturnsPage() {
             <BookOpen className="h-7 w-7 text-[#39FF14]" />
             <span className="text-xl font-bold text-gray-800">LibraryPro</span>
           </div>
-
           <div className="flex items-center gap-3">
             <Link href="/dashboard/borrower" className="flex items-center gap-2 text-gray-600 hover:text-gray-800">
               <ArrowLeft className="h-5 w-5" />
@@ -133,12 +131,32 @@ export default function BorrowerReturnsPage() {
         </div>
       </header>
 
+      {/* Popup for success */}
+      {showSuccessPopup && (
+        <div className="fixed top-6 right-6 z-50 bg-white border border-[#39FF14] p-4 rounded-lg shadow-lg flex items-center gap-3 animate-fade-in-out">
+          <img
+            src={showSuccessPopup.imageUrl}
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = "https://placehold.co/300x300?text=No+Image&font=roboto";
+            }}
+            alt="Item Cover"
+            className="h-12 w-10 object-cover rounded"
+          />
+          <div>
+            <p className="font-bold text-gray-800">Returned!</p>
+            <p className="text-sm text-gray-600">{showSuccessPopup.name}</p>
+          </div>
+        </div>
+      )}
+
       <div className="container mx-auto px-4 py-8">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-800">Return Items</h1>
           <p className="text-gray-600 mt-2">Return your borrowed items to the library.</p>
         </div>
 
+        {/* Active Items */}
         {isLoading ? (
           <div className="flex justify-center items-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#39FF14]"></div>
@@ -158,36 +176,47 @@ export default function BorrowerReturnsPage() {
             </div>
           </div>
         ) : (
-          <div className="space-y-4">
-            {activeItems.map((item: any) => (
+          <div className="space-y-4 mb-8">
+            {activeItems.map((item) => (
               <div key={item.id} className="bg-white rounded-lg overflow-hidden border border-[#39FF14]/30 shadow-sm">
                 <div className="p-4 flex items-center gap-4">
                   <img
-                    src={item.item.coverUrl || "/placeholder.svg?height=60&width=40"}
-                    alt={`Cover of ${item.item.title}`}
+                    src={item.item.description.imageUrl}
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement
+                      target.src =
+                      item.item.description.type === "book"
+                          ? "https://placehold.co/300x300?text=Book&font=roboto"
+                          : item.item.description.type === "audiobook"
+                          ? "https://placehold.co/300x300?text=Audiobook&font=roboto"
+                          : item.item.description.type === "dvd"
+                          ? "https://placehold.co/300x300?text=DVD&font=roboto"
+                          : "https://placehold.co/300x300?text=Other&font=roboto"
+                    }}
+                    alt={`Cover of ${item.item.description.itemName}`}
                     className="h-20 w-16 object-cover rounded"
                   />
                   <div className="flex-1">
-                    <h3 className="text-lg font-bold text-gray-800">{item.item.title}</h3>
+                    <h3 className="text-lg font-bold text-gray-800">{item.item.description.itemName}</h3>
                     <p className="text-sm text-gray-600">
-                      {item.item.type === "book" || item.item.type === "audiobook" ? "Author" : "Director"}:{" "}
-                      {item.item.creator}
+                      {(item.item.description.type === "book" || item.item.description.type === "audiobook" ? "Author" : "Director")}:{" "}
+                      {item.item.description.authorName || item.item.description.director}
                     </p>
                     <div className="flex flex-wrap gap-2 mt-2">
                       <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full capitalize">
-                        {item.item.type}
+                        {item.item.description.type}
                       </span>
                       <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
                         Borrowed: {new Date(item.borrowDate).toLocaleDateString()}
                       </span>
                       <span
                         className={`text-xs px-2 py-1 rounded-full ${
-                          new Date(item.dueDate) < new Date()
+                          new Date(item.returnDate) < new Date()
                             ? "bg-red-100 text-red-800"
                             : "bg-yellow-100 text-yellow-800"
                         }`}
                       >
-                        Due: {new Date(item.dueDate).toLocaleDateString()}
+                        Due: {new Date(item.returnDate).toLocaleDateString()}
                       </span>
                     </div>
                   </div>
@@ -210,8 +239,49 @@ export default function BorrowerReturnsPage() {
             ))}
           </div>
         )}
+
+        {/* Returned Items Section */}
+        {finishedItems.length > 0 && (
+          <div className="space-y-4 mt-12">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">Returned Items</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+              {finishedItems.map((item) => (
+                <div key={item.id} className="bg-gray-100 rounded-lg overflow-hidden border border-gray-300 shadow-sm">
+                  <div className="p-4 flex items-center gap-4">
+                    <img
+                      src={item.item.description.imageUrl}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement
+                        target.src =
+                          item.item.description.type === "book"
+                            ? "https://placehold.co/300x300?text=Book&font=roboto"
+                            : item.item.description.type === "audiobook"
+                            ? "https://placehold.co/300x300?text=Audiobook&font=roboto"
+                            : item.item.description.type === "dvd"
+                            ? "https://placehold.co/300x300?text=DVD&font=roboto"
+                            : "https://placehold.co/300x300?text=Other&font=roboto"
+                      }}
+                      alt={`Cover of ${item.item.description.itemName}`}
+                      className="h-20 w-16 object-cover rounded"
+                    />
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-gray-800">{item.item.description.itemName}</h3>
+                      <p className="text-sm text-gray-600">
+                        {(item.item.description.type === "book" || item.item.description.type === "audiobook" ? "Author" : "Director")}:{" "}
+                        {item.item.description.authorName || item.item.description.director}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-2">
+                        Returned on {new Date(item.returnedOn).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
-  )
+  );
 }
-

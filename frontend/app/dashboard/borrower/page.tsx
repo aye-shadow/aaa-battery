@@ -1,4 +1,8 @@
+"use client";
 import Link from "next/link"
+import authAPI from "@/lib/api/auth" 
+import { useRouter } from "next/navigation" 
+import { useEffect, useState } from "react" 
 import {
   BookOpen,
   Book,
@@ -15,6 +19,21 @@ import {
 } from "lucide-react"
 
 export default function BorrowerDashboard() {
+  const [firstName, setFirstName] = useState<string>("")    // 👈 add state
+  const router = useRouter()  
+  useEffect(() => {
+    const storedFirstName = localStorage.getItem("userFirstName") || ""
+    setFirstName(storedFirstName)
+  }, []) 
+  const handleLogout = async () => {              // 👈 ADD THIS
+    try {
+      await authAPI.logout()
+      router.push("/auth")                        // 👈 redirect to login page after logout
+    } catch (error) {
+      console.error("Logout failed:", error)
+      alert("Logout failed. Please try again.")
+    }
+  }
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Sidebar */}
@@ -75,13 +94,13 @@ export default function BorrowerDashboard() {
           </a>
         </nav>
         <div className="absolute bottom-0 w-full p-4 border-t border-[#39FF14]/30">
-          <Link
-            href="/auth"
+          <button
+            onClick={handleLogout}
             className="flex items-center justify-start gap-2 w-full px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md"
           >
             <LogOut className="h-5 w-5" />
             <span>Log out</span>
-          </Link>
+          </button>
         </div>
       </div>
 
@@ -90,7 +109,7 @@ export default function BorrowerDashboard() {
         <header className="mb-8 flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold text-gray-800">Borrower Dashboard</h1>
-            <p className="text-gray-600">Welcome back, John Doe</p>
+            <p className="text-gray-600">Welcome back{firstName ? `, ${firstName}` : ""} </p>
           </div>
           <div className="flex items-center gap-2 bg-white p-2 rounded-full border border-gray-200">
             <User className="h-6 w-6 text-[#39FF14]" />
@@ -261,4 +280,3 @@ export default function BorrowerDashboard() {
     </div>
   )
 }
-

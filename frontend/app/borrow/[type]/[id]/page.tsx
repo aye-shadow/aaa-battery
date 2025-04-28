@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useParams, useRouter } from "next/navigation"
+import { useParams, useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import {
   BookOpen,
@@ -17,55 +17,10 @@ import {
   Disc,
 } from "lucide-react"
 
-// Add these imports at the top of the file
 import { catalogAPI, borrowAPI } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
 
-// Sample library items data with different types (would come from an API in a real app)
-const libraryItems = [
-  {
-    id: 1,
-    title: "The Great Gatsby",
-    creator: "F. Scott Fitzgerald",
-    type: "book",
-    genre: "Fiction",
-    year: 1925,
-    available: true,
-    coverUrl: "/placeholder.svg?height=200&width=150",
-    description: "A story of wealth, love, and the American Dream in the 1920s.",
-    borrowPeriod: 21, // days
-  },
-  {
-    id: 4,
-    title: "Pride and Prejudice",
-    creator: "Jane Austen",
-    type: "audiobook",
-    genre: "Romance",
-    year: 2013,
-    available: true,
-    coverUrl: "/placeholder.svg?height=200&width=150",
-    description: "A romantic novel about the Bennet family and the proud Mr. Darcy.",
-    narrator: "Rosamund Pike",
-    duration: "11h 35m",
-    borrowPeriod: 14, // days
-  },
-  {
-    id: 7,
-    title: "The Shawshank Redemption",
-    creator: "Frank Darabont",
-    type: "dvd",
-    genre: "Drama",
-    year: 1994,
-    available: true,
-    coverUrl: "/placeholder.svg?height=200&width=150",
-    description:
-      "Two imprisoned men bond over a number of years, finding solace and eventual redemption through acts of common decency.",
-    runtime: "142 min",
-    borrowPeriod: 7, // days
-  },
-]
-
-// Helper function to get the appropriate icon for each item type
+// Helper functions
 const getItemTypeIcon = (type) => {
   switch (type) {
     case "book":
@@ -79,7 +34,6 @@ const getItemTypeIcon = (type) => {
   }
 }
 
-// Helper function to get the creator label based on item type
 const getCreatorLabel = (type) => {
   switch (type) {
     case "book":
@@ -93,29 +47,23 @@ const getCreatorLabel = (type) => {
   }
 }
 
-// Helper function to format date as YYYY-MM-DD
 const formatDate = (date) => {
   try {
     if (!(date instanceof Date) || isNaN(date.getTime())) {
-      // If date is invalid, return today's date
       const today = new Date()
       return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`
     }
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`
   } catch (error) {
-    console.error("Error formatting date:", error)
-    // Return today's date as fallback
     const today = new Date()
     return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`
   }
 }
 
-// Helper function to add days to a date
 const addDays = (date, days) => {
   try {
     const result = new Date(date)
     if (isNaN(result.getTime())) {
-      // If input date is invalid, use today as base
       const today = new Date()
       today.setDate(today.getDate() + (days || 0))
       return today
@@ -123,8 +71,6 @@ const addDays = (date, days) => {
     result.setDate(result.getDate() + (days || 0))
     return result
   } catch (error) {
-    console.error("Error adding days to date:", error)
-    // Return today + days as fallback
     const today = new Date()
     today.setDate(today.getDate() + (days || 0))
     return today
@@ -137,8 +83,13 @@ export default function BorrowRequestPage() {
   const { type, id } = params
   const itemId = Number(id)
 
-  // Add this line inside the component, near the top with other hooks
-  const { apiToast } = useToast()
+  const searchParams = useSearchParams()
+  const title = searchParams.get("title")
+  const coverUrl = searchParams.get("coverUrl")
+  const creator = searchParams.get("creator")
+  const itemType = searchParams.get("type")
+
+  const { toast } = useToast()
 
   const [item, setItem] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -151,131 +102,77 @@ export default function BorrowRequestPage() {
   const [submitError, setSubmitError] = useState("")
   const [processingIds, setProcessingIds] = useState([])
 
-  // const catalogAPI = {
-  //   getItemById: async (type, id) => {
-  //     // Simulate API call
-  //     return new Promise((resolve) => {
-  //       setTimeout(() => {
-  //         const foundItem = libraryItems.find((item) => item.id === id && item.type === type)
-  //         resolve({ data: foundItem })
-  //       }, 500)
-  //     })
-  //   },
-  // }
-
-  // const borrowAPI = {
-  //   submitBorrowRequest: async (borrowData) => {
-  //     // Simulate API call
-  //     return new Promise((resolve) => {
-  //       setTimeout(() => {
-  //         resolve({ data: { success: true } })
-  //       }, 1000)
-  //     })
-  //   },
-  // }
-
-  // const apiToast = (title, description, method, endpoint, type) => {
-  //   console.log(`API Toast: ${title} - ${description} (${method} ${endpoint}) - Type: ${type}`)
-  // }
-
-  // Fetch item data
   useEffect(() => {
-    const fetchItemData = async () => {
-      setProcessingIds((prev) => [...prev, itemId])
-      setLoading(true)
+    setProcessingIds((prev) => [...prev, itemId])
+    setLoading(true)
 
-      try {
-        // Call the API to get item details
-        const response = await catalogAPI.getItemById(type, itemId)
+    try {
+      setItem({
+        id: itemId,
+        title: title || "",
+        coverUrl: coverUrl || "",
+        creator: creator || "",
+        type: itemType || "",
+        genre: "",
+        year: "",
+        available: true,
+        borrowPeriod: 14,
+      })
 
-        // Show success toast with API details
-        apiToast(
-          "Item Details Loaded",
-          "Item details have been fetched successfully.",
-          "GET",
-          `/api/catalog/${type}/${itemId}`,
-          "info",
-        )
+      const today = new Date()
+      const defaultReturnDate = new Date(today)
+      defaultReturnDate.setDate(today.getDate() + 14)
+      setReturnDate(formatDate(defaultReturnDate))
 
-        // Set the found item
-        setItem(response.data)
+      toast({
+        title: "Item Details Loaded",
+        description: "Item details have been fetched successfully.",
+        variant: "info",
+      })
+    } catch (error) {
+      console.error("Error setting item details:", error)
 
-        if (response.data) {
-          try {
-            // Set default return date based on item's borrow period
-            // Use a safer approach to handle dates
-            const today = new Date()
-            const defaultReturnDate = new Date(today)
-            defaultReturnDate.setDate(today.getDate() + (response.data.borrowPeriod || 14))
-            setReturnDate(formatDate(defaultReturnDate))
-          } catch (error) {
-            console.error("Error setting default return date:", error)
-            // Fallback to a default 14-day period if there's an issue
-            const fallbackDate = new Date()
-            fallbackDate.setDate(fallbackDate.getDate() + 14)
-            setReturnDate(formatDate(fallbackDate))
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching item details:", error)
-
-        // Show error toast with API details
-        apiToast(
-          "Error Loading Item",
-          "Failed to fetch item details. Please try again.",
-          "GET",
-          `/api/catalog/${type}/${itemId}`,
-          "destructive",
-        )
-      } finally {
-        setProcessingIds((prev) => prev.filter((id) => id !== itemId))
-        setLoading(false)
-      }
+      toast({
+        title: "Error Loading Item",
+        description: "Failed to load item details. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setProcessingIds((prev) => prev.filter((id) => id !== itemId))
+      setLoading(false)
     }
+  }, [itemId, title, coverUrl, creator, itemType, toast])
 
-    fetchItemData()
-  }, [itemId, type, apiToast])
-
-  // Handle borrow period change
+  // Borrow period and borrow date handlers (keep as you wrote)
   const handleBorrowPeriodChange = (e) => {
     const period = e.target.value
     setBorrowPeriod(period)
-
     try {
       if (period === "default" && item?.borrowPeriod) {
-        // Set to default borrow period for this item type
         const defaultReturnDate = addDays(new Date(borrowDate), item.borrowPeriod)
         setReturnDate(formatDate(defaultReturnDate))
       } else {
-        // Set to selected custom period
-        const days = Number.parseInt(period) || 14 // Default to 14 days if parsing fails
+        const days = Number.parseInt(period) || 14
         const newReturnDate = addDays(new Date(borrowDate), days)
         setReturnDate(formatDate(newReturnDate))
       }
     } catch (error) {
-      console.error("Error calculating return date:", error)
-      // Set a fallback return date (today + 14 days)
       const fallbackDate = new Date()
       fallbackDate.setDate(fallbackDate.getDate() + 14)
       setReturnDate(formatDate(fallbackDate))
     }
   }
 
-  // Handle borrow date change
   const handleBorrowDateChange = (e) => {
     const newBorrowDate = e.target.value
     setBorrowDate(newBorrowDate)
-
     try {
-      // Update return date based on selected borrow period
-      let days = item?.borrowPeriod || 14 // Default to 14 days if item.borrowPeriod is undefined
+      let days = item?.borrowPeriod || 14
       if (borrowPeriod !== "default") {
-        days = Number.parseInt(borrowPeriod) || 14 // Default to 14 days if parsing fails
+        days = Number.parseInt(borrowPeriod) || 14
       }
-
       const borrowDateObj = new Date(newBorrowDate)
       if (isNaN(borrowDateObj.getTime())) {
-        // If borrow date is invalid, use today
         const today = new Date()
         const newReturnDate = addDays(today, days)
         setReturnDate(formatDate(newReturnDate))
@@ -284,67 +181,63 @@ export default function BorrowRequestPage() {
         setReturnDate(formatDate(newReturnDate))
       }
     } catch (error) {
-      console.error("Error updating return date:", error)
-      // Set a fallback return date (today + 14 days)
       const fallbackDate = new Date()
       fallbackDate.setDate(fallbackDate.getDate() + 14)
       setReturnDate(formatDate(fallbackDate))
     }
   }
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault()
     setIsSubmitting(true)
     setSubmitError("")
 
     try {
-      // Prepare borrow request data
       const borrowData = {
-        userId: 101, // Assuming user ID 101 (John Doe)
         itemId: item.id,
-        borrowDate,
-        returnDate,
-        notes,
       }
+      console.log("📦 Borrow Request Payload:", borrowData)
 
-      // Show API toast for the borrow request
-      apiToast("Processing Borrow Request", "Submitting your borrow request...", "POST", "/api/borrows", "info")
+      toast({
+        title: "Processing Borrow Request",
+        description: "Submitting your borrow request...",
+        variant: "info",
+      })
 
-      // Call the API to submit the borrow request
       const response = await borrowAPI.submitBorrowRequest(borrowData)
+      console.log("✅ API Response:", response.data)
 
-      // Show success toast with API details
-      apiToast(
-        "Borrow Request Submitted",
-        "Your request has been submitted successfully.",
-        "POST",
-        "/api/borrows",
-        "success",
-      )
+      toast({
+        title: "Borrow Request Submitted",
+        description: "Your request has been submitted successfully.",
+        variant: "success",
+      })
 
       setIsSubmitting(false)
       setSubmitSuccess(true)
 
-      // Redirect to dashboard after a short delay
       setTimeout(() => {
         router.push("/dashboard/borrower")
       }, 2000)
     } catch (error) {
-      console.error("Error submitting borrow request:", error)
+      console.error("❌ Error submitting borrow request:", error)
 
-      // Show error toast with API details
-      apiToast(
-        "Borrow Request Failed",
-        "Failed to submit your borrow request. Please try again.",
-        "POST",
-        "/api/borrows",
-        "destructive",
-      )
+      toast({
+        title: "Borrow Request Failed",
+        description: "Failed to submit your borrow request. Please try again.",
+        variant: "destructive",
+      })
 
       setIsSubmitting(false)
     }
   }
+
+  // Your entire rest of the render (if loading, if error, form, etc.)
+  // ⬇️ ⬇️ ⬇️ 
+  // (No change needed — keep your JSX as you wrote.)
+
+
+  
 
   // If item not found or not available
   if (!loading && (!item || !item.available)) {
@@ -442,11 +335,15 @@ export default function BorrowRequestPage() {
               {/* Item Details */}
               <div className="flex flex-col md:flex-row gap-6 mb-8">
                 <div className="flex-shrink-0">
-                  <img
-                    src={item.coverUrl || "/placeholder.svg"}
-                    alt={`Cover of ${item.title}`}
-                    className="w-full md:w-40 object-cover rounded"
-                  />
+                <img
+                        src={item.coverUrl}
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement
+                          target.src ="/placeholder.svg?height=200&width=150"
+                        }}
+                        alt={`Cover of ${item.title}`}
+                        className="w-full md:w-40 object-cover rounded"
+                      />
                 </div>
 
                 <div className="flex-1">
@@ -611,4 +508,3 @@ export default function BorrowRequestPage() {
     </div>
   )
 }
-

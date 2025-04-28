@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { BookOpen, Search, Filter, Book, ArrowLeft, Plus, Edit, User, LogOut, Disc, Headphones } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { catalogAPI } from "@/lib/api"
+import { API_BASE_URL } from "@/lib/api/axios-instance"
 
 // Helper function to get the appropriate icon for each item type
 const getItemTypeIcon = (type: string) => {
@@ -24,7 +24,6 @@ const getItemTypeIcon = (type: string) => {
 const getCreatorLabel = (type: string) => {
   switch (type) {
     case "book":
-      return "Author"
     case "audiobook":
       return "Author"
     case "dvd":
@@ -34,92 +33,84 @@ const getCreatorLabel = (type: string) => {
   }
 }
 
-export default function CatalogPage() {
-  // First, let's modify how we determine and store the user role
-  // Add this near the top of the component, replacing the existing userRole state
+// 🛠️ fetch and map the new catalog format
+const getAllItems = async () => {
+  const response = await fetch(`${API_BASE_URL}/items/users/view-items`)
+  if (!response.ok) {
+    throw new Error("Failed to fetch catalog items")
+  }
+  const data = await response.json()
 
-  // Instead of just using a state that defaults to "borrower", let's check localStorage
-  const [userRole, setUserRole] = useState(() => {
-    // Check if we're in the browser
-    if (typeof window !== "undefined") {
-      // Try to get the role from localStorage
-      const savedRole = localStorage.getItem("userRole")
-      // Return the saved role or default to "borrower"
-      return savedRole || "librarian"
+  return data.map((item: any) => {
+    const desc = item.description
+    return {
+      id: desc.descriptionId,
+      title: desc.itemName,
+      creator: desc.authorName || desc.director || desc.narratorName || "Unknown",
+      genre: desc.genre,
+      publisher: desc.publisher || desc.producer || "Unknown",
+      type: desc.type,
+      year: desc.year || "Unknown",
+      coverUrl: desc.imageUrl,
+      description: desc.blurb,
+      available: item.availableCopies > 0,
+      totalCopies: item.totalCopies,
+      availableCopies: item.availableCopies,
+      duration: desc.duration || null,
     }
-    // Default for server-side rendering
-    return "librarian"
   })
+}
 
-  // Add this effect to persist the role when it changes
-  useEffect(() => {
-    // Save the role to localStorage whenever it changes
-    if (typeof window !== "undefined") {
-      localStorage.setItem("userRole", userRole)
-    }
-  }, [userRole])
-
-  // Add this to help with debugging
-  useEffect(() => {
-    console.log("Current user role:", userRole)
-  }, [userRole])
-
+export default function CatalogPage() {
   const { toast } = useToast()
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedGenre, setSelectedGenre] = useState("All")
   const [selectedItemType, setSelectedItemType] = useState("All")
   const [availabilityFilter, setAvailabilityFilter] = useState("all")
-  // const [userRole, setUserRole] = useState("borrower") // Toggle between "borrower" and "librarian" to test
   const [viewMode, setViewMode] = useState("grid") // "grid" or "list"
-  const [libraryItems, setLibraryItems] = useState([])
+  const [libraryItems, setLibraryItems] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [genres, setGenres] = useState(["All"])
   const [itemTypes, setItemTypes] = useState(["All"])
+  const [userRole, setUserRole] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("userRole") || "librarian"
+    }
+    return "librarian"
+  })
 
-  // Fetch catalog data when component mounts or filters change
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("userRole", userRole)
+    }
+  }, [userRole])
+
+  // 🔥 Fetch data on mount
   useEffect(() => {
     const fetchCatalogData = async () => {
       setIsLoading(true)
-
-      // Show API notification for GET request
       toast({
         title: "API Request",
-        description: "GET /api/catalog - Fetching catalog items...",
+        description: "GET /items/users/view-items - Fetching catalog items...",
         variant: "default",
       })
 
       try {
-        // Build filters object based on current selections
-        const filters: any = {}
-        if (selectedItemType !== "All") filters.type = selectedItemType
-        if (selectedGenre !== "All") filters.genre = selectedGenre
-        if (availabilityFilter !== "all") {
-          filters.available = availabilityFilter === "available"
-        }
+        const mappedItems = await getAllItems()
 
-        // Call the API function to get catalog items
-        const response = await catalogAPI.getAllItems(filters)
+        setLibraryItems(mappedItems)
 
-        // Update state with the fetched data
-        setLibraryItems(response.data)
-
-        // Extract unique genres and item types for filters
-        const uniqueGenres = ["All", ...new Set(response.data.map((item: any) => item.genre))]
-        const uniqueTypes = ["All", ...new Set(response.data.map((item: any) => item.type))]
-
+        const uniqueGenres = ["All", ...new Set(mappedItems.map(item => item.genre))]
+        const uniqueTypes = ["All", ...new Set(mappedItems.map(item => item.type))]
         setGenres(uniqueGenres)
         setItemTypes(uniqueTypes)
 
-        // Show success notification
         toast({
           title: "API Success",
-          description: `Loaded ${response.data.length} catalog items`,
+          description: `Loaded ${mappedItems.length} items`,
           variant: "success",
         })
       } catch (error) {
-        console.error("Error fetching catalog data:", error)
-
-        // Show error notification
         toast({
           title: "API Error",
           description: `Failed to fetch catalog items: ${error instanceof Error ? error.message : "Unknown error"}`,
@@ -133,65 +124,28 @@ export default function CatalogPage() {
     fetchCatalogData()
   }, [selectedGenre, selectedItemType, availabilityFilter, toast])
 
-  // Handle search functionality
-  useEffect(() => {
-    const handleSearch = async () => {
-      if (searchTerm.trim() === "") return
-
-      setIsLoading(true)
-
-      // Show API notification for search request
-      toast({
-        title: "API Request",
-        description: `GET /api/catalog/search?q=${searchTerm} - Searching catalog...`,
-        variant: "default",
-      })
-
-      try {
-        // Call the API function to search items
-        const response = await catalogAPI.searchItems(searchTerm)
-
-        // Update state with search results
-        setLibraryItems(response.data)
-
-        // Show success notification
-        toast({
-          title: "API Success",
-          description: `Found ${response.data.length} items matching "${searchTerm}"`,
-          variant: "success",
-        })
-      } catch (error) {
-        console.error("Error searching catalog:", error)
-
-        // Show error notification
-        toast({
-          title: "API Error",
-          description: `Search failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-          variant: "destructive",
-        })
-      } finally {
-        setIsLoading(false)
+  // 🧠 Client-side fallback filtering
+  const filteredItems = libraryItems.filter(item => {
+    if (selectedGenre !== "All" && item.genre !== selectedGenre) return false
+    if (selectedItemType !== "All" && item.type !== selectedItemType) return false
+    if (availabilityFilter === "available" && !item.available) return false
+    if (availabilityFilter === "unavailable" && item.available) return false
+    if (searchTerm.trim() !== "") {
+      const term = searchTerm.toLowerCase()
+      if (
+        !item.title.toLowerCase().includes(term) &&
+        !item.creator.toLowerCase().includes(term) &&
+        !item.description.toLowerCase().includes(term)
+      ) {
+        return false
       }
     }
-
-    // Debounce search to avoid too many API calls
-    const debounceTimer = setTimeout(() => {
-      if (searchTerm.trim().length >= 3) {
-        handleSearch()
-      }
-    }, 500)
-
-    return () => clearTimeout(debounceTimer)
-  }, [searchTerm, toast])
-
-  // Filter items based on search term, genre, item type, and availability
-  const filteredItems = libraryItems.filter((item: any) => {
-    // If we're already filtering via API, we don't need to filter again
-    // This is just a fallback for client-side filtering
     return true
   })
 
   return (
+    // 🖨️ Full page exactly your original (continues same...)
+
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
       <header className="bg-white border-b border-[#39FF14]/30 sticky top-0 z-10">
@@ -348,11 +302,23 @@ export default function CatalogPage() {
                   >
                     <div className="p-4 flex flex-col h-full">
                       <div className="flex justify-center mb-4">
-                        <img
-                          src={item.coverUrl || "/placeholder.svg?height=200&width=150"}
-                          alt={`Cover of ${item.title}`}
-                          className="h-48 object-cover rounded"
-                        />
+                      <img
+                        src={item.coverUrl}
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement
+                          target.src =
+                            item.type === "book"
+                              ? "https://placehold.co/300x300?text=Book&font=roboto"
+                              : item.type === "audiobook"
+                              ? "https://placehold.co/300x300?text=Audiobook&font=roboto"
+                              : item.type === "dvd"
+                              ? "https://placehold.co/300x300?text=DVD&font=roboto"
+                              : "https://placehold.co/300x300?text=Other&font=roboto"
+                        }}
+                        alt={`Cover of ${item.title}`}
+                        className="h-48 object-cover rounded"
+                      />
+
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
@@ -447,11 +413,23 @@ export default function CatalogPage() {
                     className="bg-white rounded-lg overflow-hidden border border-[#39FF14]/30 shadow-sm hover:shadow-md transition-shadow"
                   >
                     <div className="p-4 flex gap-4">
-                      <img
-                        src={item.coverUrl || "/placeholder.svg?height=60&width=40"}
-                        alt={`Cover of ${item.title}`}
-                        className="h-32 w-24 object-cover rounded"
-                      />
+                    <img
+                      src={item.coverUrl}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement
+                        target.src =
+                          item.type === "book"
+                            ? "https://placehold.co/100x100?text=Book&font=roboto"
+                            : item.type === "audiobook"
+                            ? "https://placehold.co/100x100?text=Audiobook&font=roboto"
+                            : item.type === "dvd"
+                            ? "https://placehold.co/100x100?text=DVD&font=roboto"
+                            : "https://placehold.co/100x100?text=Other&font=roboto"
+                      }}
+                      alt={`Cover of ${item.title}`}
+                      className="h-48 object-cover rounded"
+                    />
+
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
                           {getItemTypeIcon(item.type)}
@@ -545,23 +523,15 @@ export default function CatalogPage() {
         {/* Add New Item Button (Librarian Only) */}
         {userRole === "librarian" && (
           <div className="fixed bottom-8 right-8">
+            <Link href="/catalog/manage/new">
             <button
-              className="flex items-center justify-center w-14 h-14 rounded-full bg-[#39FF14] text-black shadow-lg hover:bg-[#39FF14]/90 focus:outline-none focus:ring-2 focus:ring-[#39FF14] transition-colors"
-              onClick={() => {
-                // Show API notification for adding new item
-                toast({
-                  title: "API Request",
-                  description: "GET /api/catalog/new - Loading new item form",
-                  variant: "default",
-                })
-              }}
-            >
+              className="flex items-center justify-center w-14 h-14 rounded-full bg-[#39FF14] text-black shadow-lg hover:bg-[#39FF14]/90 focus:outline-none focus:ring-2 focus:ring-[#39FF14] transition-colors">
               <Plus className="h-6 w-6" />
             </button>
+            </Link>
           </div>
         )}
       </div>
     </div>
   )
 }
-

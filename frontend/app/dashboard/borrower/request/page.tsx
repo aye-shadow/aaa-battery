@@ -5,42 +5,21 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { BookOpen, ArrowLeft, User, LogOut, CheckCircle, AlertCircle, BookPlus } from "lucide-react"
 
-// Add the import for requestAPI and apiToast at the top of the file
-import { requestAPI } from "@/lib/api"
+import { requestAPI } from "@/lib/api/request"
 import { useToast } from "@/hooks/use-toast"
 
-// Book categories for the dropdown
 const bookCategories = [
-  "Fiction",
-  "Non-Fiction",
-  "Science Fiction",
-  "Fantasy",
-  "Mystery",
-  "Thriller",
-  "Romance",
-  "Historical Fiction",
-  "Biography",
-  "Self-Help",
-  "Business",
-  "Science",
-  "Technology",
-  "Art",
-  "Poetry",
-  "Children's",
-  "Young Adult",
-  "Other",
+  "Fiction", "Non-Fiction", "Science Fiction", "Fantasy", "Mystery", "Thriller",
+  "Romance", "Historical Fiction", "Biography", "Self-Help", "Business",
+  "Science", "Technology", "Art", "Poetry", "Children's", "Young Adult", "Other",
 ]
 
-// Content types
 const contentTypes = ["Book", "Audiobook", "DVD", "E-Book", "Journal", "Magazine", "Other"]
 
 export default function NewBookRequestPage() {
   const router = useRouter()
-
-  // Then inside the component, add this line near the top with other hooks:
   const { apiToast } = useToast()
 
-  // Form state
   const [title, setTitle] = useState("")
   const [author, setAuthor] = useState("")
   const [contentType, setContentType] = useState("Book")
@@ -51,245 +30,84 @@ export default function NewBookRequestPage() {
   const [reason, setReason] = useState("")
   const [urgency, setUrgency] = useState("normal")
 
-  // Form submission state
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitSuccess, setSubmitSuccess] = useState(false)
   const [submitError, setSubmitError] = useState("")
 
-  // Form validation
   const [errors, setErrors] = useState({
-    title: "",
-    author: "",
-    category: "",
-    description: "",
+    title: "", author: "", category: "", description: "",
   })
 
-  // Add error handling for form validation
   const validateForm = () => {
     let valid = true
-    const newErrors = {
-      title: "",
-      author: "",
-      category: "",
-      description: "",
-    }
+    const newErrors = { title: "", author: "", category: "", description: "" }
 
-    if (!title.trim()) {
-      newErrors.title = "Title is required"
-      valid = false
-    }
-
-    if (!author.trim()) {
-      newErrors.author = "Author/Creator is required"
-      valid = false
-    }
-
-    if (!category) {
-      newErrors.category = "Category is required"
-      valid = false
-    }
-
-    if (!description.trim()) {
-      newErrors.description = "Description is required"
-      valid = false
-    }
+    if (!title.trim()) { newErrors.title = "Title is required"; valid = false }
+    if (!author.trim()) { newErrors.author = "Author/Creator is required"; valid = false }
+    if (!category) { newErrors.category = "Category is required"; valid = false }
+    if (!description.trim()) { newErrors.description = "Description is required"; valid = false }
 
     setErrors(newErrors)
 
     if (!valid) {
-      // Show validation error toast
       apiToast("Validation Error", "Please fill in all required fields.", "POST", "/api/requests", "destructive")
     }
 
     return valid
   }
 
-  // Function to display API notifications using react-hot-toast
-  /*
-  const apiToast = (title, message, method, endpoint, type) => {
-    const toastConfig = {
-      duration: 4000,
-      position: 'bottom-right',
-    };
-
-    const content = (
-      <div>
-        <p className="font-semibold">{title}</p>
-        <p>{message}</p>
-        <p className="text-xs text-gray-500">
-          {method} {endpoint}
-        </p>
-      </div>
-    );
-
-    switch (type) {
-      case 'success':
-        toast.success(content, toastConfig);
-        break;
-      case 'destructive':
-        toast.error(content, toastConfig);
-        break;
-      case 'info':
-        toast.info(content, toastConfig);
-        break;
-      default:
-        toast(content, toastConfig);
-    }
-  };
-  */
-
-  // Update the handleSubmit function to use apiToast for API notifications
-  /*
-  const handleSubmit = (e) => {
-    e.preventDefault()
-
+  const handleSubmit = async (e: any) => {
+    e.preventDefault();
+  
     if (!validateForm()) {
-      return
+      return;
     }
-
-    setIsSubmitting(true)
-    setSubmitError("")
-
-    // Show API notification for the request submission
-    apiToast(
-      "Processing Request",
-      "Submitting your content request...",
-      "POST",
-      "/api/requests",
-      "info"
-    )
-
-    // Simulate API call to submit the request
-    setTimeout(() => {
-      try {
-        // In a real app, this would be an API call to submit the request
-        console.log("Request submitted:", {
-          title,
-          author,
-          contentType,
-          category,
-          isbn,
-          publicationYear,
-          description,
-          reason,
-          urgency,
-          requestDate: new Date().toISOString(),
-          status: "pending",
-        })
-
-        // Show success toast with API details
-        apiToast(
-          "Request Submitted",
-          "Your content request has been submitted successfully.",
-          "POST",
-          "/api/requests",
-          "success"
-        )
-
-        setIsSubmitting(false)
-        setSubmitSuccess(true)
-
-        // Redirect to dashboard after a short delay
-        setTimeout(() => {
-          router.push("/dashboard/borrower")
-        }, 3000)
-      } catch (error) {
-        console.error("Error submitting request:", error)
-        
-        // Show error toast with API details
-        apiToast(
-          "Request Failed",
-          "Failed to submit your content request. Please try again.",
-          "POST",
-          "/api/requests",
-          "destructive"
-        )
-        
-        setIsSubmitting(false)
-        setSubmitError("An error occurred while submitting your request. Please try again.")
-      }
-    }, 1500)
-  }
-  */
-
-  // Add proper API integration using the requestAPI from lib/api
-  // Replace the existing handleSubmit function with this implementation
-  // for a real API integration (uncomment when ready to use)
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-
-    if (!validateForm()) {
-      return
-    }
-
-    setIsSubmitting(true)
-    setSubmitError("")
-
+  
+    setIsSubmitting(true);
+    setSubmitError("");
+  
     try {
-      // Prepare request data
-      const requestData = {
-        userId: 101, // Assuming user ID 101 (John Doe)
-        title,
-        author,
-        contentType,
-        category,
-        isbn,
-        publicationYear: publicationYear ? Number.parseInt(publicationYear) : null,
-        description,
-        reason,
-        urgency,
+      let typeLower = contentType.toLowerCase();
+      if (typeLower !== "book" && typeLower !== "audiobook" && typeLower !== "dvd") {
+        typeLower = "book"; // Default to book if something else
       }
-
-      // Show API notification for the request submission
-      apiToast("Processing Request", "Submitting your content request...", "POST", "/api/requests", "info")
-
-      // Call the API to submit the content request
-      const response = await requestAPI.submitContentRequest(requestData)
-
-      // Show success toast with API details
-      apiToast(
-        "Request Submitted",
-        "Your content request has been submitted successfully.",
-        "POST",
-        "/api/requests",
-        "success",
-      )
-
-      setIsSubmitting(false)
-      setSubmitSuccess(true)
-
-      // Redirect to dashboard after a short delay
+  
+      const requestData = {
+        itemType: typeLower,
+        itemName: title,
+        itemBy: author,
+        notes: reason || "",
+      };
+  
+      apiToast("Processing Request", "Submitting your content request...", "POST", "/request/borrower/new-request", "info");
+  
+      await requestAPI.submitContentRequest(requestData);
+  
+      apiToast("Request Submitted", "Your content request has been submitted successfully.", "POST", "/request/borrower/new-request", "success");
+  
+      setIsSubmitting(false);
+      setSubmitSuccess(true);
+  
       setTimeout(() => {
-        router.push("/dashboard/borrower")
-      }, 3000)
+        router.push("/dashboard/borrower");
+      }, 3000);
     } catch (error) {
-      console.error("Error submitting request:", error)
-
-      // Show error toast with API details
-      apiToast(
-        "Request Failed",
-        "Failed to submit your content request. Please try again.",
-        "POST",
-        "/api/requests",
-        "destructive",
-      )
-
-      setIsSubmitting(false)
-      setSubmitError("An error occurred while submitting your request. Please try again.")
+      console.error("Error submitting request:", error);
+      apiToast("Request Failed", "Failed to submit your content request. Please try again.", "POST", "/request/borrower/new-request", "destructive");
+      setIsSubmitting(false);
+      setSubmitError("An error occurred while submitting your request. Please try again.");
     }
   }
+  
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Header */}
       <header className="bg-white border-b border-[#39FF14]/30 sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <BookOpen className="h-7 w-7 text-[#39FF14]" />
             <span className="text-xl font-bold text-gray-800">LibraryPro</span>
           </div>
-
           <div className="flex items-center gap-3">
             <Link href="/dashboard/borrower" className="flex items-center gap-2 text-gray-600 hover:text-gray-800">
               <ArrowLeft className="h-5 w-5" />
@@ -354,9 +172,7 @@ export default function NewBookRequestPage() {
                       type="text"
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
-                      className={`w-full h-10 rounded-md border ${
-                        errors.title ? "border-red-300 ring-red-500" : "border-gray-300"
-                      } bg-white px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#39FF14] focus:border-[#39FF14]`}
+                      className={`w-full h-10 rounded-md border ${errors.title ? "border-red-300 ring-red-500" : "border-gray-300"} bg-white px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#39FF14] focus:border-[#39FF14]`}
                       placeholder="Enter the title of the content"
                     />
                     {errors.title && <p className="text-xs text-red-500">{errors.title}</p>}
@@ -372,14 +188,13 @@ export default function NewBookRequestPage() {
                       type="text"
                       value={author}
                       onChange={(e) => setAuthor(e.target.value)}
-                      className={`w-full h-10 rounded-md border ${
-                        errors.author ? "border-red-300 ring-red-500" : "border-gray-300"
-                      } bg-white px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#39FF14] focus:border-[#39FF14]`}
+                      className={`w-full h-10 rounded-md border ${errors.author ? "border-red-300 ring-red-500" : "border-gray-300"} bg-white px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#39FF14] focus:border-[#39FF14]`}
                       placeholder="Enter the author or creator"
                     />
                     {errors.author && <p className="text-xs text-red-500">{errors.author}</p>}
                   </div>
 
+                  {/* Rest of your form code (contentType, category, etc.) continues exactly same here... */}
                   {/* Content Type */}
                   <div className="space-y-2">
                     <label htmlFor="contentType" className="block text-sm font-medium text-gray-700">
@@ -408,9 +223,7 @@ export default function NewBookRequestPage() {
                       id="category"
                       value={category}
                       onChange={(e) => setCategory(e.target.value)}
-                      className={`w-full h-10 rounded-md border ${
-                        errors.category ? "border-red-300 ring-red-500" : "border-gray-300"
-                      } bg-white px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#39FF14] focus:border-[#39FF14]`}
+                      className={`w-full h-10 rounded-md border ${errors.category ? "border-red-300 ring-red-500" : "border-gray-300"} bg-white px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#39FF14] focus:border-[#39FF14]`}
                     >
                       <option value="">Select a category</option>
                       {bookCategories.map((cat) => (
@@ -464,16 +277,14 @@ export default function NewBookRequestPage() {
                       id="description"
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
-                      className={`w-full rounded-md border ${
-                        errors.description ? "border-red-300 ring-red-500" : "border-gray-300"
-                      } bg-white px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#39FF14] focus:border-[#39FF14]`}
+                      className={`w-full rounded-md border ${errors.description ? "border-red-300 ring-red-500" : "border-gray-300"} bg-white px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#39FF14] focus:border-[#39FF14]`}
                       rows={3}
                       placeholder="Provide a brief description of the content"
                     />
                     {errors.description && <p className="text-xs text-red-500">{errors.description}</p>}
                   </div>
 
-                  {/* Reason for Request */}
+                  {/* Reason for Request (Optional) */}
                   <div className="space-y-2 md:col-span-2">
                     <label htmlFor="reason" className="block text-sm font-medium text-gray-700">
                       Reason for Request (Optional)
@@ -484,7 +295,7 @@ export default function NewBookRequestPage() {
                       onChange={(e) => setReason(e.target.value)}
                       className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#39FF14] focus:border-[#39FF14]"
                       rows={2}
-                      placeholder="Why are you interested in this content? How would it benefit you or other library users?"
+                      placeholder="Why are you interested in this content?"
                     />
                   </div>
 
@@ -565,4 +376,3 @@ export default function NewBookRequestPage() {
     </div>
   )
 }
-

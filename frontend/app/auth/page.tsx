@@ -24,6 +24,9 @@ export default function AuthPage() {
   const router = useRouter()
   const { apiToast } = useToast()
 
+  // Add a state for error messages at the top of the component
+  const [error, setError] = useState<string | null>(null)
+
   useEffect(() => {
     // Check if there's a tab parameter in the URL
     const tabParam = searchParams.get("tab")
@@ -32,13 +35,20 @@ export default function AuthPage() {
     }
   }, [searchParams])
 
+  // Update the handleSignIn function to properly handle role-based authentication
   const handleSignIn = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setIsLoading(true)
+    // Clear any previous errors
+    setError(null)
 
     try {
+      // Convert userRole to uppercase to match API expectations
+      const apiRole = userRole.toUpperCase()
+      console.log(`Attempting to login with email: ${email}, role: ${apiRole}`)
+
       // Call the login API endpoint
-      const response = await authAPI.login(email, password)
+      const response = await authAPI.login(email, password, apiRole)
 
       // Show success toast with API details
       apiToast("Login Successful", "You have been successfully logged in.", "POST", "/api/auth/login", "success")
@@ -60,83 +70,81 @@ export default function AuthPage() {
     } catch (error) {
       console.error("Login error:", error)
 
+      // Set the error message to display on the page
+      if (error instanceof Error) {
+        setError(error.message)
+      } else {
+        setError("An unexpected error occurred. Please try again.")
+      }
+
       // Show error toast with API details
-      apiToast("Login Failed", "Invalid email or password. Please try again.", "POST", "/api/auth/login", "destructive")
+      apiToast(
+        "Login Failed",
+        `Unable to login: ${error instanceof Error ? error.message : "Network error"}`,
+        "POST",
+        "/api/auth/login",
+        "destructive",
+      )
 
       setIsLoading(false)
     }
   }
 
+  
   const handleSignUp = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-
-    // Validate passwords match
+  
     if (password !== confirmPassword) {
       apiToast(
         "Registration Error",
         "Passwords do not match. Please try again.",
         "POST",
-        "/api/auth/register",
+        "/api/auth/signup",
         "destructive",
       )
       return
     }
-
+  
     setIsLoading(true)
-
+  
     try {
-      // Prepare user data
       const userData = {
-        firstName,
-        lastName,
+        fullName: `${firstName} ${lastName}`,
         email,
         password,
-        role: userRole,
+        role: userRole.toUpperCase(),
       }
-
-      // Call the register API endpoint
+  
       const response = await authAPI.register(userData)
-
-      // Show success toast with API details
+  
       apiToast(
         "Registration Successful",
-        "Your account has been created successfully.",
+        "Your account has been created successfully. Please sign in.",
         "POST",
-        "/api/auth/register",
+        "/api/auth/signup",
         "success",
       )
-
-      // Store the token if returned
-      if (response.data.token) {
-        localStorage.setItem("auth_token", response.data.token)
-      }
-      // This will ensure the user role is saved when registering
-      localStorage.setItem("userRole", userRole)
-
-      // Redirect to appropriate dashboard
-      setTimeout(() => {
-        setIsLoading(false)
-        if (userRole === "borrower") {
-          router.push("/dashboard/borrower")
-        } else {
-          router.push("/dashboard/librarian")
-        }
-      }, 1000)
+  
+      // ✅ After successful signup: move user to login tab
+      setActiveTab("signin")
+      setIsLoading(false)
+  
     } catch (error) {
       console.error("Registration error:", error)
-
-      // Show error toast with API details
+  
       apiToast(
         "Registration Failed",
-        "There was an error creating your account. Please try again.",
+        error instanceof Error ? error.message : "An unexpected error occurred.",
         "POST",
-        "/api/auth/register",
+        "/api/auth/signup",
         "destructive",
       )
-
+  
       setIsLoading(false)
     }
   }
+  
+  
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
@@ -185,6 +193,11 @@ export default function AuthPage() {
 
             {activeTab === "signin" && (
               <form onSubmit={handleSignIn} className="py-6">
+                {error && (
+                  <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                    <p className="text-sm">{error}</p>
+                  </div>
+                )}
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <label htmlFor="email" className="block text-sm font-medium text-gray-700">
@@ -376,4 +389,3 @@ export default function AuthPage() {
     </div>
   )
 }
-

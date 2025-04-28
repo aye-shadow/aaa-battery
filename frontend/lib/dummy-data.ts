@@ -578,4 +578,3 @@ export const dummyData = {
 }
 
 export default dummyData
-

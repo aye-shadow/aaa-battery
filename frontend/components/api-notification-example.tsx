@@ -97,4 +97,3 @@ try {
   // An error notification will be shown
 }
 */
-
