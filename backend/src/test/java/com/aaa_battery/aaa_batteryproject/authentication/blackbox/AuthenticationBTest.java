@@ -1,7 +1,6 @@
 package com.aaa_battery.aaa_batteryproject.authentication.blackbox;
 
 import com.aaa_battery.aaa_batteryproject.authentication.service.AuthenticationService;
-import com.aaa_battery.aaa_batteryproject.authentication.util.Credentials;
 import com.aaa_battery.aaa_batteryproject.authentication.util.LoginTest;
 import com.aaa_battery.aaa_batteryproject.authentication.util.LogoutTest;
 import com.aaa_battery.aaa_batteryproject.authentication.util.RegisterTest;
@@ -35,8 +34,8 @@ public class AuthenticationBTest {
 
     @Test
     void testLoginBorrower_Successful() throws Exception {
-        String email = Credentials.BORROWER.getEmail();
-        String password = Credentials.BORROWER.getPassword();
+        String email = com.aaa_battery.aaa_batteryproject.authentication.util.Credentials.BORROWER.getEmail();
+        String password = com.aaa_battery.aaa_batteryproject.authentication.util.Credentials.BORROWER.getPassword();
         Role role = Role.BORROWER;
 
         LoginTest.setUp(authenticationService, jwtService, mockMvc, JWT_STRING, email, password, role);
@@ -51,8 +50,8 @@ public class AuthenticationBTest {
 
     @Test
     void testLoginLibrarian_Successful() throws Exception {
-        String email = Credentials.LIBRARIAN.getEmail();
-        String password = Credentials.LIBRARIAN.getPassword();
+        String email = com.aaa_battery.aaa_batteryproject.authentication.util.Credentials.LIBRARIAN.getEmail();
+        String password = com.aaa_battery.aaa_batteryproject.authentication.util.Credentials.LIBRARIAN.getPassword();
         Role role = Role.LIBRARIAN;
 
         LoginTest.setUp(authenticationService, jwtService, mockMvc, JWT_STRING, email, password, role);
@@ -67,8 +66,8 @@ public class AuthenticationBTest {
 
     @Test
     void testLoginBorrower_InvalidCredentials() throws Exception {
-        String email = Credentials.INVALID.getEmail();
-        String password = Credentials.INVALID.getPassword();
+        String email = com.aaa_battery.aaa_batteryproject.authentication.util.Credentials.INVALID.getEmail();
+        String password = com.aaa_battery.aaa_batteryproject.authentication.util.Credentials.INVALID.getPassword();
         Role role = Role.BORROWER;
 
         LoginTest.mockitoCall(authenticationService);
@@ -81,8 +80,8 @@ public class AuthenticationBTest {
 
     @Test
     void testLoginLibrarian_InvalidCredentials() throws Exception {
-        String email = Credentials.INVALID.getEmail();
-        String password = Credentials.INVALID.getPassword();
+        String email = com.aaa_battery.aaa_batteryproject.authentication.util.Credentials.INVALID.getEmail();
+        String password = com.aaa_battery.aaa_batteryproject.authentication.util.Credentials.INVALID.getPassword();
         Role role = Role.LIBRARIAN;
 
         LoginTest.mockitoCall(authenticationService);
@@ -95,8 +94,8 @@ public class AuthenticationBTest {
 
     @Test
     void testLoginBorrower_IncorrectPassword() throws Exception {
-        String email = Credentials.BORROWER.getEmail();
-        String password = Credentials.BORROWER_INCORRECT.getPassword();
+        String email = com.aaa_battery.aaa_batteryproject.authentication.util.Credentials.BORROWER.getEmail();
+        String password = com.aaa_battery.aaa_batteryproject.authentication.util.Credentials.BORROWER_INCORRECT.getPassword();
         Role role = Role.BORROWER;
 
         LoginTest.mockitoCall(authenticationService);
@@ -110,8 +109,8 @@ public class AuthenticationBTest {
 
     @Test
     void testLoginLibrarian_IncorrectPassword() throws Exception {
-        String email = Credentials.LIBRARIAN.getEmail();
-        String password = Credentials.LIBRARIAN_INCORRECT.getPassword();
+        String email = com.aaa_battery.aaa_batteryproject.authentication.util.Credentials.LIBRARIAN.getEmail();
+        String password = com.aaa_battery.aaa_batteryproject.authentication.util.Credentials.LIBRARIAN_INCORRECT.getPassword();
         Role role = Role.LIBRARIAN;
 
         LoginTest.mockitoCall(authenticationService);
@@ -124,7 +123,7 @@ public class AuthenticationBTest {
 
     @Test
     void testLoginBorrower_MissingEmail() throws Exception {
-        String password = Credentials.BORROWER.getPassword();
+        String password = com.aaa_battery.aaa_batteryproject.authentication.util.Credentials.BORROWER.getPassword();
         Role role = Role.BORROWER;
 
         LoginTest.mockitoCall(authenticationService);
@@ -137,7 +136,7 @@ public class AuthenticationBTest {
 
     @Test
     void testLoginBorrower_MissingPassword() throws Exception {
-        String email = Credentials.BORROWER.getEmail();
+        String email = com.aaa_battery.aaa_batteryproject.authentication.util.Credentials.BORROWER.getEmail();
         Role role = Role.BORROWER;
 
         LoginTest.mockitoCall(authenticationService);
@@ -150,8 +149,8 @@ public class AuthenticationBTest {
 
     @Test
     void testRegisterLibrarian_Successful() throws Exception {
-        String email = Credentials.NEW_LIBRARIAN.getEmail();
-        String password = Credentials.NEW_LIBRARIAN.getPassword();
+        String email = com.aaa_battery.aaa_batteryproject.authentication.util.Credentials.NEW_LIBRARIAN.getEmail();
+        String password = com.aaa_battery.aaa_batteryproject.authentication.util.Credentials.NEW_LIBRARIAN.getPassword();
         Role role = Role.LIBRARIAN;
 
         UserEntity registeredLibrarian = new LibrarianEntity()
@@ -159,7 +158,7 @@ public class AuthenticationBTest {
             .setPassword(password)
             .setRole(role)
             .setUsername(email)
-            .setFullName(Credentials.NEW_LIBRARIAN.getFullName())
+            .setFullName(com.aaa_battery.aaa_batteryproject.authentication.util.Credentials.NEW_LIBRARIAN.getFullName())
             .setCreatedAt(new java.util.Date())
             .setUpdatedAt(new java.util.Date());
 
@@ -168,8 +167,8 @@ public class AuthenticationBTest {
 
     @Test
     void testRegisterBorrower_Successful() throws Exception {
-        String email = Credentials.NEW_BORROWER.getEmail();
-        String password = Credentials.NEW_BORROWER.getPassword();
+        String email = com.aaa_battery.aaa_batteryproject.authentication.util.Credentials.NEW_BORROWER.getEmail();
+        String password = com.aaa_battery.aaa_batteryproject.authentication.util.Credentials.NEW_BORROWER.getPassword();
         Role role = Role.BORROWER;
 
         UserEntity registeredBorrower = new BorrowerEntity()
@@ -177,7 +176,7 @@ public class AuthenticationBTest {
             .setPassword(password)
             .setRole(role)
             .setUsername(email)
-            .setFullName(Credentials.NEW_BORROWER.getFullName())
+            .setFullName(com.aaa_battery.aaa_batteryproject.authentication.util.Credentials.NEW_BORROWER.getFullName())
             .setCreatedAt(new java.util.Date())
             .setUpdatedAt(new java.util.Date());
 
@@ -186,8 +185,8 @@ public class AuthenticationBTest {
 
     @Test
     void testRegisterBorrower_MissingFullName() throws Exception {
-        String email = Credentials.NEW_BORROWER.getEmail();
-        String password = Credentials.NEW_BORROWER.getPassword();
+        String email = com.aaa_battery.aaa_batteryproject.authentication.util.Credentials.NEW_BORROWER.getEmail();
+        String password = com.aaa_battery.aaa_batteryproject.authentication.util.Credentials.NEW_BORROWER.getPassword();
         Role role = Role.BORROWER;
 
         UserEntity registeredBorrower = new BorrowerEntity()
@@ -204,7 +203,7 @@ public class AuthenticationBTest {
 
     @Test
     void testRegisterBorrower_MissingEmail() throws Exception {
-        String password = Credentials.NEW_BORROWER.getPassword();
+        String password = com.aaa_battery.aaa_batteryproject.authentication.util.Credentials.NEW_BORROWER.getPassword();
         Role role = Role.BORROWER;
 
         UserEntity registeredBorrower = new BorrowerEntity()
@@ -212,7 +211,7 @@ public class AuthenticationBTest {
             .setPassword(password)
             .setRole(role)
             .setUsername("")
-            .setFullName(Credentials.NEW_BORROWER.getFullName())
+            .setFullName(com.aaa_battery.aaa_batteryproject.authentication.util.Credentials.NEW_BORROWER.getFullName())
             .setCreatedAt(new java.util.Date())
             .setUpdatedAt(new java.util.Date());
 
@@ -221,7 +220,7 @@ public class AuthenticationBTest {
 
     @Test
     void testRegisterBorrower_MissingPassword() throws Exception {
-        String email = Credentials.NEW_BORROWER.getEmail();
+        String email = com.aaa_battery.aaa_batteryproject.authentication.util.Credentials.NEW_BORROWER.getEmail();
         Role role = Role.BORROWER;
 
         UserEntity registeredBorrower = new BorrowerEntity()
@@ -229,7 +228,7 @@ public class AuthenticationBTest {
             .setPassword("") // Missing password
             .setRole(role)
             .setUsername(email)
-            .setFullName(Credentials.NEW_BORROWER.getFullName())
+            .setFullName(com.aaa_battery.aaa_batteryproject.authentication.util.Credentials.NEW_BORROWER.getFullName())
             .setCreatedAt(new java.util.Date())
             .setUpdatedAt(new java.util.Date());
 

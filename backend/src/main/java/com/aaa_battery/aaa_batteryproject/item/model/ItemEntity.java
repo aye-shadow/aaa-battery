@@ -18,6 +18,9 @@ public class ItemEntity {
     @JoinColumn(name = "description_id", referencedColumnName = "descriptionId", nullable = false, unique = false)
     private ItemDescriptionEntity description;
 
+    public void setItemId(Integer i) {
+         itemId= i ;
+    }
     public int getItemId() {
         return itemId;
     }

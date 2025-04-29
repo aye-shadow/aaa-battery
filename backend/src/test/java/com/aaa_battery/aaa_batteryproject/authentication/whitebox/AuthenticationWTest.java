@@ -2,7 +2,6 @@
 package com.aaa_battery.aaa_batteryproject.authentication.whitebox;
 
 import com.aaa_battery.aaa_batteryproject.authentication.service.AuthenticationService;
-import com.aaa_battery.aaa_batteryproject.authentication.util.Credentials;
 import com.aaa_battery.aaa_batteryproject.authentication.util.LoginTest;
 import com.aaa_battery.aaa_batteryproject.authentication.util.LogoutTest;
 import com.aaa_battery.aaa_batteryproject.authentication.util.RegisterTest;
@@ -44,7 +43,7 @@ public class AuthenticationWTest {
 
         LoginTest.performLoginIncorrectRole(
             authenticationService, jwtService, mockMvc, JWT_STRING, 
-            Credentials.BORROWER.getEmail(), Credentials.BORROWER.getPassword(), Role.LIBRARIAN
+            com.aaa_battery.aaa_batteryproject.authentication.util.Credentials.BORROWER.getEmail(), com.aaa_battery.aaa_batteryproject.authentication.util.Credential.BORROWER.getPassword(), Role.LIBRARIAN
             );
     }
 
@@ -55,14 +54,14 @@ public class AuthenticationWTest {
 
         LoginTest.performLoginIncorrectRole(
             authenticationService, jwtService, mockMvc, JWT_STRING, 
-            Credentials.LIBRARIAN.getEmail(), Credentials.LIBRARIAN.getPassword(), Role.BORROWER
+            com.aaa_battery.aaa_batteryproject.authentication.util.Credentials.LIBRARIAN.getEmail(), com.aaa_battery.aaa_batteryproject.authentication.util.Credential.LIBRARIAN.getPassword(), Role.BORROWER
             );
     }
 
     @Test
     public void testLogin_UserAlreadyLoggedIn() throws Exception {
-        String email = Credentials.BORROWER.getEmail();
-        String password = Credentials.BORROWER.getPassword();
+        String email = com.aaa_battery.aaa_batteryproject.authentication.util.Credentials.BORROWER.getEmail();
+        String password = com.aaa_battery.aaa_batteryproject.authentication.util.Credentials.BORROWER.getPassword();
         Role role = Role.BORROWER;
 
         LoginTest.setUp(authenticationService, jwtService, mockMvc, JWT_STRING, email, password, role);
@@ -74,7 +73,7 @@ public class AuthenticationWTest {
 
         LoginTest.secondLogin(
             authenticationService, jwtService, mockMvc, JWT_STRING, 
-            Credentials.LIBRARIAN.getEmail(), Credentials.LIBRARIAN.getPassword(), Role.LIBRARIAN
+            com.aaa_battery.aaa_batteryproject.authentication.util.Credentials.LIBRARIAN.getEmail(), com.aaa_battery.aaa_batteryproject.authentication.util.Credential.LIBRARIAN.getPassword(), Role.LIBRARIAN
             );
 
         LogoutTest.logoutUser(mockMvc, JWT_STRING);
@@ -87,8 +86,8 @@ public class AuthenticationWTest {
 
     @Test
     void testLogin_NullJWT() throws Exception {
-        String email = Credentials.BORROWER.getEmail();
-        String password = Credentials.BORROWER.getPassword();
+        String email = com.aaa_battery.aaa_batteryproject.authentication.util.Credentials.BORROWER.getEmail();
+        String password = com.aaa_battery.aaa_batteryproject.authentication.util.Credentials.BORROWER.getPassword();
         Role role = Role.BORROWER;
 
         LoginTest.setUp(
@@ -104,8 +103,8 @@ public class AuthenticationWTest {
 
     @Test
     void testLogin_EmptyJWT() throws Exception {
-        String email = Credentials.BORROWER.getEmail();
-        String password = Credentials.BORROWER.getPassword();
+        String email = com.aaa_battery.aaa_batteryproject.authentication.util.Credentials.BORROWER.getEmail();
+        String password = com.aaa_battery.aaa_batteryproject.authentication.util.Credentials.BORROWER.getPassword();
         Role role = Role.BORROWER;
 
         LoginTest.setUp(
@@ -121,8 +120,8 @@ public class AuthenticationWTest {
 
     @Test
     void testLogin_InvalidRoleFromFrontend() throws Exception {
-        String email = Credentials.BORROWER.getEmail();
-        String password = Credentials.BORROWER.getPassword();
+        String email = com.aaa_battery.aaa_batteryproject.authentication.util.Credentials.BORROWER.getEmail();
+        String password = com.aaa_battery.aaa_batteryproject.authentication.util.Credentials.BORROWER.getPassword();
         String invalidRole = "ADMIN";
 
         LoginTest.performLoginWithInvalidRole(
@@ -133,14 +132,14 @@ public class AuthenticationWTest {
 
     @Test
     void testRegister_InvalidRoleFromFrontend() throws Exception {
-        String email = Credentials.NEW_BORROWER.getEmail();
-        String password = Credentials.NEW_BORROWER.getPassword();
+        String email = com.aaa_battery.aaa_batteryproject.authentication.util.Credentials.NEW_BORROWER.getEmail();
+        String password = com.aaa_battery.aaa_batteryproject.authentication.util.Credentials.NEW_BORROWER.getPassword();
 
         UserEntity newBorrower = new BorrowerEntity()
             .setEmail(email)
             .setPassword(password) 
             .setUsername(email)
-            .setFullName(Credentials.NEW_BORROWER.getFullName())
+            .setFullName(com.aaa_battery.aaa_batteryproject.authentication.util.Credentials.NEW_BORROWER.getFullName())
             .setCreatedAt(new java.util.Date())
             .setUpdatedAt(new java.util.Date());
 
