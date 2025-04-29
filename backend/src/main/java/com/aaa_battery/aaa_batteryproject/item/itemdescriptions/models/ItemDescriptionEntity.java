@@ -101,7 +101,16 @@ public class ItemDescriptionEntity {
 
     // Helper method to create description based on type
     public static ItemDescriptionEntity createDescription(Map<String, Object> requestData) {
-        String type = ((String) requestData.get("type")).toLowerCase();
+        System.out.println("createDescription requestData: " + requestData);
+        Object typeObj = requestData.get("type");
+        String type;
+        if (typeObj instanceof String) {
+            type = ((String) typeObj).toLowerCase();
+        } else if (typeObj instanceof ItemType) {
+            type = ((ItemType) typeObj).name().toLowerCase();
+        } else {
+            throw new IllegalArgumentException("Invalid type for item type: " + typeObj);
+        }
         ItemDescriptionEntity description;
     
         switch (type) {
@@ -144,11 +153,21 @@ public class ItemDescriptionEntity {
     
     private static void populateCommonDetails(ItemDescriptionEntity description, Map<String, Object> requestData) {
         description.setItemName((String) requestData.get("itemName"));
-        description.setGenre((String) requestData.get("genre"));
-        description.setBlurb((String) requestData.get("blurb"));
-        description.setDate(LocalDateTime.parse((String) requestData.get("date")));
-        description.setTotalCopies((Integer) requestData.get("totalCopies"));
-        description.setImageUrl((String) requestData.get("imageUrl"));
+        description.setGenre((String) requestData.getOrDefault("genre", ""));
+        description.setBlurb((String) requestData.getOrDefault("blurb", ""));
+        String dateStr = (String) requestData.get("date");
+        if (dateStr != null) {
+            description.setDate(LocalDateTime.parse(dateStr));
+        }
+        Object totalCopiesObj = requestData.get("totalCopies");
+        if (totalCopiesObj instanceof Integer) {
+            description.setTotalCopies((Integer) totalCopiesObj);
+        } else if (totalCopiesObj instanceof String) {
+            description.setTotalCopies(Integer.parseInt((String) totalCopiesObj));
+        } else {
+            description.setTotalCopies(1);
+        }
+        description.setImageUrl((String) requestData.getOrDefault("imageUrl", ""));
         description.setItemType((String) requestData.get("type"));
     }
     

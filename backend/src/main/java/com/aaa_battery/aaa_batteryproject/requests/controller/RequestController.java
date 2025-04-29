@@ -114,13 +114,20 @@ public class RequestController {
             String status = handleRequestDTO.getStatus();
             String reason = handleRequestDTO.getReason();
 
+            // Log received status for debugging
+            System.out.println("Received status: " + status);
+
             RequestEntity.RequestStatus requestStatus = RequestEntity.RequestStatus.valueOf(status.toUpperCase());
             requestService.updateRequestStatus(id, requestStatus, reason);
             return ResponseEntity.ok("Request status updated.");
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("Invalid request status.");
+            return ResponseEntity.badRequest().body("Invalid request status. Valid values: " +
+                java.util.Arrays.toString(RequestEntity.RequestStatus.values()));
         } catch (RuntimeException e) {
-            return ResponseEntity.status(500).body("Request not found.");
+            if ("Request not found".equals(e.getMessage())) {
+                return ResponseEntity.status(500).body("Request not found.");
+            }
+            return ResponseEntity.status(500).body("Failed to update the request status: " + e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Failed to update the request status: " + e.getMessage());
         }

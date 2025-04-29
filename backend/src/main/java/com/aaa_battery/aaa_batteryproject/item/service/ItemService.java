@@ -45,21 +45,31 @@ public class ItemService {
 
     public ItemDescriptionEntity addItemFromRequest(Map<String, Object> requestData) {
         String itemName = (String) requestData.get("itemName");
-        ItemType type = (ItemType) requestData.get("type");
+        Object typeObj = requestData.get("type");
+        ItemType type;
+        if (typeObj instanceof ItemType) {
+            type = (ItemType) typeObj;
+        } else if (typeObj instanceof String) {
+            type = ItemType.valueOf(((String) typeObj).toUpperCase());
+        } else {
+            throw new IllegalArgumentException("Invalid type for item type: " + typeObj);
+        }
         int totalCopies = (int) requestData.getOrDefault("totalCopies", 1);
-
+    
         // Check if description already exists
         ItemDescriptionEntity existingDescription = itemDescriptionService.findByNameAndItemType(itemName, type);
-
+    
         ItemDescriptionEntity description;
         if (existingDescription != null) {
             description = existingDescription;
         } else {
             // Create a new description based on the type
+            requestData = new java.util.HashMap<>(requestData);
+            requestData.put("type", type.name()); // Ensure type is String for downstream code
             description = ItemDescriptionEntity.createDescription(requestData);
             itemDescriptionService.saveDescription(description); // Save to DB
         }
-
+    
         // Create multiple items based on totalCopies
         for (int i = 0; i < totalCopies; i++) {
             ItemEntity item = new ItemEntity();
@@ -67,7 +77,7 @@ public class ItemService {
             item.setDescription(description);
             itemRepository.save(item); // Save item in the database
         }
-
+    
         return description;
     }
 }
