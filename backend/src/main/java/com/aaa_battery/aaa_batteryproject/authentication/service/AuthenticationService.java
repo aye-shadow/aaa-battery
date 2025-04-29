@@ -47,11 +47,20 @@ public class AuthenticationService {
             throw new IllegalArgumentException("Invalid role");
         }
 
+        // Check if user with this email already exists
+        if (userRepository.findByEmail(input.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("Email is already in use");
+        }
+
         UserEntity user;
         if (input.getRole().equals(Role.BORROWER)) {
-            user = new BorrowerEntity();
+            BorrowerEntity borrower = new BorrowerEntity();
+            borrower.setFullName(input.getFullName()); // Set the required fullName field
+            user = borrower;
         } else if (input.getRole().equals(Role.LIBRARIAN)) {
-            user = new LibrarianEntity();
+            LibrarianEntity librarian = new LibrarianEntity();
+            // If LibrarianEntity has a similar required field, set it here
+            user = librarian;
         } else {
             throw new IllegalArgumentException("Unsupported role.");
         }
@@ -83,6 +92,10 @@ public class AuthenticationService {
         UserEntity user = userRepository.findByEmail(input.getEmail())
                 .orElseThrow();
     
+        if (user.getRole() == null) {
+            throw new IllegalArgumentException("Invalid role for the provided credentials");
+        }
+
         // Validate the role
         if (!user.getRole().equals(input.getRole())) {
             throw new IllegalArgumentException("Invalid role for the provided credentials");

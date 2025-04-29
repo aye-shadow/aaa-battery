@@ -4,9 +4,13 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import com.aaa_battery.aaa_batteryproject.item.model.ItemType;
+import com.aaa_battery.aaa_batteryproject.reviews.model.ReviewEntity;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.*;
 
@@ -29,6 +33,12 @@ public class ItemDescriptionEntity {
     private int totalCopies;
     private String imageUrl;
 
+    // Add cached average rating field
+    private Double averageRating = 0.0;
+
+    @OneToMany(mappedBy = "itemDescription", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<ReviewEntity> reviews = new ArrayList<>();
     
     public int getDescriptionId() {
         return descriptionId;
@@ -95,8 +105,51 @@ public class ItemDescriptionEntity {
         this.imageUrl = imageUrl;
     }
 
-    public void setBookDescription(BookDescription bookDesc)
-    {
+    public List<ReviewEntity> getReviews() {
+        return reviews;
+    }
+    
+    public void setReviews(List<ReviewEntity> reviews) {
+        this.reviews = reviews;
+        recalculateAverageRating(0);
+    }
+
+    public void addReview(ReviewEntity review) {
+        reviews.add(review);
+        review.setItemDescription(this);
+        recalculateAverageRating(0);
+    }
+
+    public void removeReview(ReviewEntity review) {
+        reviews.remove(review);
+        review.setItemDescription(null);
+        recalculateAverageRating(0);
+    }
+        
+    // Update the getAverageRating method to return the cached value
+    public Double getAverageRating() {
+        return averageRating;
+    }
+    
+    public void setAverageRating(Double averageRating) {
+        this.averageRating = averageRating;
+    }
+    
+    // Add a method to recalculate the average rating
+    public void recalculateAverageRating(Integer newRating) {
+        if (reviews.isEmpty()) {
+            // Check if newRating is null before using it
+            if (newRating != null) {
+                this.averageRating = newRating * 1.0;
+            } else {
+                this.averageRating = 0.0;  // Default value when newRating is null
+            }
+        } else {
+            this.averageRating = reviews.stream()
+                .mapToInt(ReviewEntity::getRating)
+                .average()
+                .orElse(0.0);
+        }
     }
 
     // Helper method to create description based on type
@@ -171,7 +224,7 @@ public class ItemDescriptionEntity {
         description.setItemType((String) requestData.get("type"));
     }
     
-    private static Duration parseDuration(String durationString) {
+    public static Duration parseDuration(String durationString) {
         if (durationString == null) {
             return null;
         }
@@ -191,5 +244,9 @@ public class ItemDescriptionEntity {
         long seconds = duration.toSecondsPart();
         
         return String.format("%02d:%02d:%02d", hours, minutes, seconds);
+    }
+
+    public void setDescriptionId(Integer itemDescriptionId) {
+        this.descriptionId = itemDescriptionId;
     }
 }

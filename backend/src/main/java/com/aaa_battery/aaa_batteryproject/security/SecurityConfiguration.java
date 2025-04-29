@@ -47,14 +47,16 @@ public class SecurityConfiguration {
             }))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
-                    "/", "/actuator/mappings", "/api/auth/**", "/api/items/users/**"
+                    "/", "/actuator/mappings", "/api/auth/**", "/api/items/users/**", 
+                    "/api/reviews/users/**" 
                     ).permitAll()
                 .requestMatchers(
                     "/api/librarian/**", "/api/items/librarian/**", "/api/request/librarian/**", 
                     "/api/fines/librarian/**"
                     ).hasRole("LIBRARIAN")
                 .requestMatchers(
-                    "/api/items/borrower/**", "/api/request/borrower/**", "/api/subscribe/borrower/**"
+                    "/api/items/borrower/**", "/api/request/borrower/**", "/api/subscribe/borrower/**",
+                    "/api/reviews/borrower/**", "/api/fines/borrower/**"
                     ).hasRole("BORROWER")
                 .requestMatchers("/api/user/**").authenticated()
                 .anyRequest().authenticated()

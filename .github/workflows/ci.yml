@@ -43,15 +43,9 @@ jobs:
 
     - name: Set environment variables from GitHub Secrets
       run: |
-<<<<<<< HEAD
-        echo "JDBC_DATABASE_URL=${{ secrets.JDBC_DATABASE_URL }}" >> $GITHUB_ENV
-        echo "JDBC_DATABASE_USERNAME=${{ secrets.JDBC_DATABASE_USERNAME }}" >> $GITHUB_ENV
-        echo "JDBC_DATABASE_PASSWORD=${{ secrets.JDBC_DATABASE_PASSWORD }}" >> $GITHUB_ENV
-=======
         echo "JDBC_DATABASE_URL=jdbc:postgresql://localhost:5432/testdb" >> $GITHUB_ENV
         echo "JDBC_DATABASE_USERNAME=testuser" >> $GITHUB_ENV
         echo "JDBC_DATABASE_PASSWORD=testpass" >> $GITHUB_ENV
->>>>>>> main
         echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" >> $GITHUB_ENV
 
     - name: Run Maven tests

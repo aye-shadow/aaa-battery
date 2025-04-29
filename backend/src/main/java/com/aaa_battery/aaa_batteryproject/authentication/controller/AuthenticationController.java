@@ -37,7 +37,9 @@ public class AuthenticationController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(400).body(e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("An unexpected error occurred during signup");
+            // Log the actual exception for debugging
+            e.printStackTrace(); // In production, use a proper logger
+            return ResponseEntity.status(500).body("An unexpected error occurred during signup: " + e.getMessage());
         }
     }
 

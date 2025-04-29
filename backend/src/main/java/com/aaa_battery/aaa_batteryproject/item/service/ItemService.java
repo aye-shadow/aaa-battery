@@ -44,7 +44,7 @@ public class ItemService {
     }
 
     public ItemDescriptionEntity addItemFromRequest(Map<String, Object> requestData) {
-        String itemName = (String) requestData.get("itemName");
+        String itemName = (String) requestData.get("itemName" );
         Object typeObj = requestData.get("type");
         ItemType type;
         if (typeObj instanceof ItemType) {
@@ -79,5 +79,9 @@ public class ItemService {
         }
     
         return description;
+    }
+
+    public void deleteItem(int itemId) {
+        itemRepository.deleteById((long) itemId);
     }
 }
