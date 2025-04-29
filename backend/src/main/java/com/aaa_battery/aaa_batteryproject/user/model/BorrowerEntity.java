@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.aaa_battery.aaa_batteryproject.borrows.model.BorrowEntity;
+import com.aaa_battery.aaa_batteryproject.fines.model.FineEntity;
 import com.aaa_battery.aaa_batteryproject.requests.model.RequestEntity;
-import com.aaa_battery.aaa_batteryproject.subscription.model.SubscriptionEntity;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
@@ -31,7 +31,7 @@ public class BorrowerEntity extends UserEntity {
     private List<RequestEntity> requests = new ArrayList<>();
 
     @OneToOne(mappedBy = "borrower", cascade = CascadeType.ALL, orphanRemoval = true)
-    private SubscriptionEntity subscription;
+    private FineEntity subscription;
 
     public BorrowerEntity() {
     }
@@ -48,11 +48,11 @@ public class BorrowerEntity extends UserEntity {
         this.borrowedItems = borrowedItems;
     }
 
-    public SubscriptionEntity getSubscription() {
+    public FineEntity getSubscription() {
         return subscription;
     }
 
-    public void setSubscription(SubscriptionEntity subscription) {
+    public void setSubscription(FineEntity subscription) {
         this.subscription = subscription;
     }
 
