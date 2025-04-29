@@ -14,9 +14,14 @@ import com.aaa_battery.aaa_batteryproject.requests.dto.HandleRequestDTO;
 import com.aaa_battery.aaa_batteryproject.requests.model.RequestEntity;
 import com.aaa_battery.aaa_batteryproject.requests.service.RequestService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @RestController
 @RequestMapping("/api/request")
 public class RequestController {
+
+    private static final Logger logger = LoggerFactory.getLogger(RequestController.class);
 
     private final BorrowerService borrowerService;
     private final RequestService requestService;
@@ -46,14 +51,19 @@ public class RequestController {
     @GetMapping("/borrower/my-requests")
     public ResponseEntity<List<RequestEntity>> viewMyRequests() {
         try {
-            // Get the currently authenticated borrower
             BorrowerEntity borrower = borrowerService.getAuthenticatedBorrower();
-            
-            // Need to add a method in RequestService to find requests by requestor
+            if (borrower == null) {
+                logger.error("Authenticated borrower is null.");
+                return ResponseEntity.status(401).body(List.of());
+            }
+
             List<RequestEntity> requests = requestService.findByRequestor(borrower);
-            
             return ResponseEntity.ok(requests);
+        } catch (IllegalArgumentException e) {
+            logger.error("Invalid argument: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(List.of());
         } catch (Exception e) {
+            logger.error("Error fetching requests: {}", e.getMessage(), e);
             return ResponseEntity.status(500).body(List.of());
         }
     }

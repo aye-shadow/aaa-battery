@@ -6,6 +6,7 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import com.aaa_battery.aaa_batteryproject.item.model.ItemType;
 import com.aaa_battery.aaa_batteryproject.user.model.BorrowerEntity;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -28,6 +29,7 @@ public class RequestEntity {
 
     @ManyToOne
     @JoinColumn(name = "requestor_id", referencedColumnName = "id") // Foreign key column in RequestEntity
+    @JsonBackReference
     private BorrowerEntity requestor;
 
     @Enumerated(EnumType.STRING)

@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.aaa_battery.aaa_batteryproject.requests.dto.RequestDTO;
 import com.aaa_battery.aaa_batteryproject.requests.model.RequestEntity;
 import com.aaa_battery.aaa_batteryproject.requests.repository.RequestRepository;
@@ -13,6 +15,8 @@ import com.aaa_battery.aaa_batteryproject.item.itemdescriptions.models.ItemDescr
 
 @Service
 public class RequestService {
+
+    private static final Logger logger = LoggerFactory.getLogger(RequestService.class);
 
     private final RequestRepository requestRepository;
     private final ItemService itemService;
@@ -45,8 +49,10 @@ public class RequestService {
 
     public List<RequestEntity> findByRequestor(BorrowerEntity requestor) {
         if (requestor == null) {
+            logger.error("Requestor cannot be null.");
             throw new IllegalArgumentException("Requestor cannot be null.");
         }
+        logger.info("Fetching requests for requestor with ID: {}", requestor.getId());
         return requestRepository.findByRequestor(requestor);
     }
 
