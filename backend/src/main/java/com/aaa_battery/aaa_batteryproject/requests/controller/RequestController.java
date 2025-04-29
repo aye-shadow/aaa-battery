@@ -10,6 +10,7 @@ import com.aaa_battery.aaa_batteryproject.user.services.BorrowerService;
 import com.aaa_battery.aaa_batteryproject.requests.dto.RequestDTO;
 import com.aaa_battery.aaa_batteryproject.requests.dto.RequestResponseDTO;
 import com.aaa_battery.aaa_batteryproject.requests.dto.RequestorDTO;
+import com.aaa_battery.aaa_batteryproject.requests.dto.HandleRequestDTO;
 import com.aaa_battery.aaa_batteryproject.requests.model.RequestEntity;
 import com.aaa_battery.aaa_batteryproject.requests.service.RequestService;
 
@@ -53,7 +54,7 @@ public class RequestController {
             
             return ResponseEntity.ok(requests);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(null);
+            return ResponseEntity.status(500).body(List.of());
         }
     }
 
@@ -73,6 +74,7 @@ public class RequestController {
                 dto.setStatus(request.getStatus());
                 dto.setRequestDate(request.getRequestDate());
                 dto.setNotes(request.getNotes());
+                dto.setReason(request.getReason());
 
                 // Map BorrowerEntity to RequestorDTO
                 BorrowerEntity requestor = request.getRequestor();
@@ -96,16 +98,19 @@ public class RequestController {
     }
 
     @PostMapping("/librarian/handle-request")
-    public ResponseEntity<String> handleRequest(@RequestParam Long requestId, @RequestParam String status) {
+    public ResponseEntity<String> handleRequest(@RequestBody HandleRequestDTO handleRequestDTO) {
         try {
-            // Convert the status string to RequestEntity.RequestStatus enum
+            Long id = handleRequestDTO.getId();
+            String status = handleRequestDTO.getStatus();
+            String reason = handleRequestDTO.getReason();
+
             RequestEntity.RequestStatus requestStatus = RequestEntity.RequestStatus.valueOf(status.toUpperCase());
-            
-            // Update to use a more generic method that can handle different statuses
-            requestService.updateRequestStatus(requestId, requestStatus);
-            return ResponseEntity.ok("Request status updated to: " + requestStatus);
+            requestService.updateRequestStatus(id, requestStatus, reason);
+            return ResponseEntity.ok("Request status updated.");
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("Invalid status value: " + status);
+            return ResponseEntity.badRequest().body("Invalid request status.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(500).body("Request not found.");
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Failed to update the request status: " + e.getMessage());
         }
