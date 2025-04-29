@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import org.hibernate.annotations.CreationTimestamp;
 
+import com.aaa_battery.aaa_batteryproject.item.model.ItemType;
 import com.aaa_battery.aaa_batteryproject.user.model.BorrowerEntity;
 
 import jakarta.persistence.Column;
@@ -29,7 +30,9 @@ public class RequestEntity {
     @JoinColumn(name = "requestor_id", referencedColumnName = "id") // Foreign key column in RequestEntity
     private BorrowerEntity requestor;
 
-    private String itemType;
+    @Enumerated(EnumType.STRING)
+    private ItemType itemType;
+    
     private String itemName;
     private String itemBy;
 
@@ -41,6 +44,8 @@ public class RequestEntity {
     private LocalDateTime requestDate;
 
     private String notes;
+
+    private String reason;
 
     public enum RequestStatus {
         SUBMITTED,
@@ -70,12 +75,15 @@ public class RequestEntity {
         this.requestor = requestor;
     }
 
-    public String getItemType() {
+    public ItemType getItemType() {
         return itemType;
     }
 
     public void setItemType(String itemType) {
-        this.itemType = itemType;
+        if (!ItemType.isValidType(itemType)) {
+            throw new IllegalArgumentException("Invalid item type: " + itemType);
+        }
+        this.itemType = ItemType.valueOf(itemType.trim().toUpperCase());
     }
 
     public String getItemName() {
@@ -116,5 +124,13 @@ public class RequestEntity {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+
+    public String getReason() {
+        return reason;
+    }
+
+    public void setReason(String reason) {
+        this.reason = reason;
     }
 }

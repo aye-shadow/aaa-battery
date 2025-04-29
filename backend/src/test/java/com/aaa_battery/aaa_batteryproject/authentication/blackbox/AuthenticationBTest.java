@@ -1,22 +1,18 @@
 package com.aaa_battery.aaa_batteryproject.authentication.blackbox;
 
 import com.aaa_battery.aaa_batteryproject.authentication.service.AuthenticationService;
+import com.aaa_battery.aaa_batteryproject.authentication.util.Credentials;
+import com.aaa_battery.aaa_batteryproject.authentication.util.LoginTest;
+import com.aaa_battery.aaa_batteryproject.authentication.util.LogoutTest;
+import com.aaa_battery.aaa_batteryproject.authentication.util.RegisterTest;
 import com.aaa_battery.aaa_batteryproject.security.jwt.services.JwtService;
-import com.aaa_battery.aaa_batteryproject.user.dtos.LoginUserDto;
+import com.aaa_battery.aaa_batteryproject.user.model.LibrarianEntity;
+import com.aaa_battery.aaa_batteryproject.user.model.BorrowerEntity;
 import com.aaa_battery.aaa_batteryproject.user.model.UserEntity;
 import com.aaa_battery.aaa_batteryproject.user.roles.Role;
-import com.aaa_battery.aaa_batteryproject.util.Credentials;
-import com.aaa_battery.aaa_batteryproject.util.LoginTest;
-import com.aaa_battery.aaa_batteryproject.util.LogoutTest;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.ldap.embedded.EmbeddedLdapProperties.Credential;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -75,8 +71,7 @@ public class AuthenticationBTest {
         String password = Credentials.INVALID.getPassword();
         Role role = Role.BORROWER;
 
-        Mockito.when(authenticationService.authenticate(any(LoginUserDto.class)))
-            .thenThrow(new IllegalArgumentException("An unexpected error occurred during login"));
+        LoginTest.mockitoCall(authenticationService);
 
         LoginTest.performInvalidLogin(
             authenticationService, mockMvc, 
@@ -90,8 +85,7 @@ public class AuthenticationBTest {
         String password = Credentials.INVALID.getPassword();
         Role role = Role.LIBRARIAN;
 
-        Mockito.when(authenticationService.authenticate(any(LoginUserDto.class)))
-            .thenThrow(new IllegalArgumentException("An unexpected error occurred during login"));
+        LoginTest.mockitoCall(authenticationService);
 
         LoginTest.performInvalidLogin(
             authenticationService, mockMvc, 
@@ -105,8 +99,7 @@ public class AuthenticationBTest {
         String password = Credentials.BORROWER_INCORRECT.getPassword();
         Role role = Role.BORROWER;
 
-        Mockito.when(authenticationService.authenticate(any(LoginUserDto.class)))
-            .thenThrow(new IllegalArgumentException("An unexpected error occurred during login"));
+        LoginTest.mockitoCall(authenticationService);
 
         LoginTest.performInvalidLogin(
             authenticationService, mockMvc, 
@@ -121,12 +114,125 @@ public class AuthenticationBTest {
         String password = Credentials.LIBRARIAN_INCORRECT.getPassword();
         Role role = Role.LIBRARIAN;
 
-        Mockito.when(authenticationService.authenticate(any(LoginUserDto.class)))
-            .thenThrow(new IllegalArgumentException("An unexpected error occurred during login"));
+        LoginTest.mockitoCall(authenticationService);
         
         LoginTest.performInvalidLogin(
             authenticationService, mockMvc, 
             email, password, role
             );
+    }
+
+    @Test
+    void testLoginBorrower_MissingEmail() throws Exception {
+        String password = Credentials.BORROWER.getPassword();
+        Role role = Role.BORROWER;
+
+        LoginTest.mockitoCall(authenticationService);
+
+        LoginTest.performInvalidLogin(
+            authenticationService, mockMvc, 
+            "", password, role
+        );
+    }
+
+    @Test
+    void testLoginBorrower_MissingPassword() throws Exception {
+        String email = Credentials.BORROWER.getEmail();
+        Role role = Role.BORROWER;
+
+        LoginTest.mockitoCall(authenticationService);
+
+        LoginTest.performInvalidLogin(
+            authenticationService, mockMvc, 
+            email, "", role
+        );
+    }
+
+    @Test
+    void testRegisterLibrarian_Successful() throws Exception {
+        String email = Credentials.NEW_LIBRARIAN.getEmail();
+        String password = Credentials.NEW_LIBRARIAN.getPassword();
+        Role role = Role.LIBRARIAN;
+
+        UserEntity registeredLibrarian = new LibrarianEntity()
+            .setEmail(email)
+            .setPassword(password)
+            .setRole(role)
+            .setUsername(email)
+            .setFullName(Credentials.NEW_LIBRARIAN.getFullName())
+            .setCreatedAt(new java.util.Date())
+            .setUpdatedAt(new java.util.Date());
+
+        RegisterTest.registerUser(authenticationService, mockMvc, registeredLibrarian);
+    }
+
+    @Test
+    void testRegisterBorrower_Successful() throws Exception {
+        String email = Credentials.NEW_BORROWER.getEmail();
+        String password = Credentials.NEW_BORROWER.getPassword();
+        Role role = Role.BORROWER;
+
+        UserEntity registeredBorrower = new BorrowerEntity()
+            .setEmail(email)
+            .setPassword(password)
+            .setRole(role)
+            .setUsername(email)
+            .setFullName(Credentials.NEW_BORROWER.getFullName())
+            .setCreatedAt(new java.util.Date())
+            .setUpdatedAt(new java.util.Date());
+
+        RegisterTest.registerUser(authenticationService, mockMvc, registeredBorrower);
+    }
+
+    @Test
+    void testRegisterBorrower_MissingFullName() throws Exception {
+        String email = Credentials.NEW_BORROWER.getEmail();
+        String password = Credentials.NEW_BORROWER.getPassword();
+        Role role = Role.BORROWER;
+
+        UserEntity registeredBorrower = new BorrowerEntity()
+            .setEmail(email)
+            .setPassword(password)
+            .setRole(role)
+            .setUsername(email)
+            .setFullName("") // Missing full name
+            .setCreatedAt(new java.util.Date())
+            .setUpdatedAt(new java.util.Date());
+
+        RegisterTest.registerUserWrong(authenticationService, mockMvc, registeredBorrower, "Name is required");
+    }
+
+    @Test
+    void testRegisterBorrower_MissingEmail() throws Exception {
+        String password = Credentials.NEW_BORROWER.getPassword();
+        Role role = Role.BORROWER;
+
+        UserEntity registeredBorrower = new BorrowerEntity()
+            .setEmail("") // Missing email
+            .setPassword(password)
+            .setRole(role)
+            .setUsername("")
+            .setFullName(Credentials.NEW_BORROWER.getFullName())
+            .setCreatedAt(new java.util.Date())
+            .setUpdatedAt(new java.util.Date());
+
+        RegisterTest.registerUserWrong(authenticationService, mockMvc, registeredBorrower, "Email is required");
+    }
+
+    @Test
+    void testRegisterBorrower_MissingPassword() throws Exception {
+        String email = Credentials.NEW_BORROWER.getEmail();
+        Role role = Role.BORROWER;
+
+        UserEntity registeredBorrower = new BorrowerEntity()
+            .setEmail(email)
+            .setPassword("") // Missing password
+            .setRole(role)
+            .setUsername(email)
+            .setFullName(Credentials.NEW_BORROWER.getFullName())
+            .setCreatedAt(new java.util.Date())
+            .setUpdatedAt(new java.util.Date());
+
+        RegisterTest.registerUserWrong(authenticationService, mockMvc, registeredBorrower, "Password is required");
     }
 }

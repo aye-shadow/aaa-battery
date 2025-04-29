@@ -6,6 +6,8 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
+import com.aaa_battery.aaa_batteryproject.item.model.ItemType;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -17,7 +19,9 @@ public class ItemDescriptionEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int descriptionId;
 
-    private String type;
+    @Enumerated(EnumType.STRING)  // Store as string (e.g., "BOOK") instead of number (0)
+    private ItemType itemType;
+
     private String itemName;
     private String genre;
     private String blurb;
@@ -30,11 +34,17 @@ public class ItemDescriptionEntity {
         return descriptionId;
     }
 
-    public String getType() {
-        return type;
+    public ItemType getItemType() {
+        return itemType;
     }
-    public void setType(String type) {
-        this.type = type;
+
+    public void setItemType(String type) {
+        switch (type.toLowerCase()) {
+            case "book" -> this.itemType = ItemType.BOOK;
+            case "audiobook" -> this.itemType = ItemType.AUDIOBOOK;
+            case "dvd" -> this.itemType = ItemType.DVD;
+            default -> throw new IllegalArgumentException("Invalid item type: " + type);
+        }
     }
 
     public String getItemName() {
@@ -139,7 +149,7 @@ public class ItemDescriptionEntity {
         description.setDate(LocalDateTime.parse((String) requestData.get("date")));
         description.setTotalCopies((Integer) requestData.get("totalCopies"));
         description.setImageUrl((String) requestData.get("imageUrl"));
-        description.setType((String) requestData.get("type"));
+        description.setItemType((String) requestData.get("type"));
     }
     
     private static Duration parseDuration(String durationString) {

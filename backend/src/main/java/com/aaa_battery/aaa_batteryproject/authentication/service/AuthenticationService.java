@@ -13,6 +13,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class AuthenticationService {
     private final UserRepository userRepository;
@@ -32,35 +34,42 @@ public class AuthenticationService {
     }
 
     public UserEntity signup(RegisterUserDto input) {
-        // Validate role
-        if (input.getRole() == null) {
-            throw new IllegalArgumentException("Role cannot be null");
+        if (input.getFullName() == null || input.getFullName().isEmpty()) {
+            throw new IllegalArgumentException("Name is required");
         }
-    
-        // Declare the user variable once
-        UserEntity user = null;
-    
-        // Dynamically create the appropriate user entity
+        if (input.getEmail() == null || input.getEmail().isEmpty()) {
+            throw new IllegalArgumentException("Email is required");
+        }
+        if (input.getPassword() == null || input.getPassword().isEmpty()) {
+            throw new IllegalArgumentException("Password is required");
+        }
+        if (input.getRole() == null || !isValidRole(input.getRole().name())) {
+            throw new IllegalArgumentException("Invalid role");
+        }
+
+        UserEntity user;
         if (input.getRole().equals(Role.BORROWER)) {
             user = new BorrowerEntity();
         } else if (input.getRole().equals(Role.LIBRARIAN)) {
             user = new LibrarianEntity();
         } else {
-            throw new IllegalArgumentException("Unsupported role: " + input.getRole());
+            throw new IllegalArgumentException("Unsupported role.");
         }
-    
-        // Set user properties
+
         user.setRole(input.getRole())
             .setUsername(input.getFullName())
             .setEmail(input.getEmail())
             .setPassword(passwordEncoder.encode(input.getPassword()));
-    
-        // Save user and handle potential errors
+
         try {
             return userRepository.save(user);
         } catch (Exception e) {
             throw new RuntimeException("Error saving user: " + e.getMessage(), e);
         }
+    }
+
+    private boolean isValidRole(String role) {
+        return List.of("BORROWER", "LIBRARIAN").contains(role);
     }
 
     public UserEntity authenticate(LoginUserDto input) {
