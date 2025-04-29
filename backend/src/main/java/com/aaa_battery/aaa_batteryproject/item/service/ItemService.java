@@ -1,19 +1,25 @@
 package com.aaa_battery.aaa_batteryproject.item.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.aaa_battery.aaa_batteryproject.item.model.ItemEntity;
+import com.aaa_battery.aaa_batteryproject.item.model.ItemType;
 import com.aaa_battery.aaa_batteryproject.item.repository.ItemRepository;
+import com.aaa_battery.aaa_batteryproject.item.itemdescriptions.models.ItemDescriptionEntity;
+import com.aaa_battery.aaa_batteryproject.item.itemdescriptions.service.ItemDescriptionService;
 
 @Service
 public class ItemService {
     private final ItemRepository itemRepository;
+    private final ItemDescriptionService itemDescriptionService;
 
     @Autowired
-    public ItemService(ItemRepository itemRepository) {
+    public ItemService(ItemRepository itemRepository, ItemDescriptionService itemDescriptionService) {
         this.itemRepository = itemRepository;
+        this.itemDescriptionService = itemDescriptionService;
     }
 
     public ItemEntity findById(Long itemId) {
@@ -37,4 +43,31 @@ public class ItemService {
         return itemRepository.findByDescriptionDescriptionId(descriptionId);
     }
 
+    public ItemDescriptionEntity addItemFromRequest(Map<String, Object> requestData) {
+        String itemName = (String) requestData.get("itemName");
+        ItemType type = (ItemType) requestData.get("type");
+        int totalCopies = (int) requestData.getOrDefault("totalCopies", 1);
+
+        // Check if description already exists
+        ItemDescriptionEntity existingDescription = itemDescriptionService.findByNameAndItemType(itemName, type);
+
+        ItemDescriptionEntity description;
+        if (existingDescription != null) {
+            description = existingDescription;
+        } else {
+            // Create a new description based on the type
+            description = ItemDescriptionEntity.createDescription(requestData);
+            itemDescriptionService.saveDescription(description); // Save to DB
+        }
+
+        // Create multiple items based on totalCopies
+        for (int i = 0; i < totalCopies; i++) {
+            ItemEntity item = new ItemEntity();
+            item.setAvailability(true); // Default availability is true
+            item.setDescription(description);
+            itemRepository.save(item); // Save item in the database
+        }
+
+        return description;
+    }
 }

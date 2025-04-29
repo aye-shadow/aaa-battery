@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.aaa_battery.aaa_batteryproject.item.model.ItemEntity;
+import com.aaa_battery.aaa_batteryproject.item.model.ItemType;
 import com.aaa_battery.aaa_batteryproject.item.service.ItemService;
 import com.aaa_battery.aaa_batteryproject.item.itemdescriptions.models.AudiobookDescription;
 import com.aaa_battery.aaa_batteryproject.item.itemdescriptions.models.BookDescription;
@@ -33,9 +34,19 @@ public class ItemController {
     @PostMapping("/librarian/add-item")
     public ResponseEntity<String> addItem(@RequestBody Map<String, Object> requestData) {
         try {
+            // Required inputs:
+            // Common: itemName (String), type (String: "book", "audiobook", "dvd"), genre (String), blurb (String), date (String: ISO format), totalCopies (Integer), imageUrl (String)
+            // Book: authorName (String), publisher (String)
+            // Audiobook: authorName (String), publisher (String), narrator (String), duration (String: "HH:mm:ss")
+            // DVD: producer (String), director (String), duration (String: "HH:mm:ss")
+            
             // Extract values from the request map
             String itemName = (String) requestData.get("itemName");
-            String type = ((String) requestData.get("type")).toLowerCase();
+            Object typeObj = requestData.get("type");
+            if (!(typeObj instanceof String) || !ItemType.isValidType((String) typeObj)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid item type provided.");
+            }
+            ItemType type = ItemType.valueOf(((String) typeObj).toUpperCase());
             
             // Get the total copies to create
             int totalCopies = 1; // Default to 1 if not specified
@@ -51,7 +62,7 @@ public class ItemController {
             }
             
             // Check if description already exists
-            ItemDescriptionEntity existingDescription = itemDescriptionService.findByNameAndType(itemName, type);
+            ItemDescriptionEntity existingDescription = itemDescriptionService.findByNameAndItemType(itemName, type);
 
             ItemDescriptionEntity description;
             if (existingDescription != null)
@@ -117,7 +128,7 @@ public class ItemController {
                     Map<String, Object> descMap = new HashMap<>();
                     descMap.put("descriptionId", desc.getDescriptionId());
                     descMap.put("itemName", desc.getItemName());
-                    descMap.put("type", desc.getType());
+                    descMap.put("type", desc.getItemType());
                     descMap.put("genre", desc.getGenre());
                     descMap.put("blurb", desc.getBlurb());
                     descMap.put("imageUrl", desc.getImageUrl());

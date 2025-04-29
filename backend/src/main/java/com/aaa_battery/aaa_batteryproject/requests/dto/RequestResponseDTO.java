@@ -2,17 +2,19 @@ package com.aaa_battery.aaa_batteryproject.requests.dto;
 
 import java.time.LocalDateTime;
 
+import com.aaa_battery.aaa_batteryproject.item.model.ItemType;
 import com.aaa_battery.aaa_batteryproject.requests.model.RequestEntity.RequestStatus;
 
 public class RequestResponseDTO {
     private Integer id;
-    private String itemType;
+    private ItemType itemType;
     private String itemName;
     private String itemBy;
     private RequestStatus status;
     private LocalDateTime requestDate;
     private String notes;
     private RequestorDTO requestor;
+    private String reason;
 
     // Getters and Setters
     public Integer getId() {
@@ -23,11 +25,11 @@ public class RequestResponseDTO {
         this.id = id;
     }
 
-    public String getItemType() {
+    public ItemType getItemType() {
         return itemType;
     }
 
-    public void setItemType(String itemType) {
+    public void setItemType(ItemType itemType) {
         this.itemType = itemType;
     }
 
@@ -77,5 +79,13 @@ public class RequestResponseDTO {
 
     public void setRequestor(RequestorDTO requestor) {
         this.requestor = requestor;
+    }
+
+    public void setReason(String reason) {
+        this.reason = reason;
+    }
+
+    public String getReason() {
+        return reason;
     }
 }

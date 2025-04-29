@@ -1,7 +1,5 @@
 package com.aaa_battery.aaa_batteryproject.borrows.controller;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Date;
@@ -83,14 +81,14 @@ public class BorrowController {
             response.put("item", Map.of(
                     "id", item.getItemId(),
                     "title", item.getDescription().getItemName(),
-                    "creator", item.getDescription().getType().equalsIgnoreCase("book")
+                    "creator", item.getDescription().getItemType().equalsIgnoreCase("book")
                             ? ((BookDescription) item.getDescription()).getAuthorName()
-                            : item.getDescription().getType().equalsIgnoreCase("audiobook")
+                            : item.getDescription().getItemType().equalsIgnoreCase("audiobook")
                             ? ((AudiobookDescription) item.getDescription()).getAuthorName()
-                            : item.getDescription().getType().equalsIgnoreCase("dvd")
+                            : item.getDescription().getItemType().equalsIgnoreCase("dvd")
                             ? ((DVDDescription) item.getDescription()).getProducer()
                             : "Unknown", // Fallback for an unknown type
-                    "type", item.getDescription().getType()
+                    "type", item.getDescription().getItemType()
             ));
             response.put("borrowStatus", borrow.getStatus());
             response.put("borrowDate", borrow.getBorrowDate());
