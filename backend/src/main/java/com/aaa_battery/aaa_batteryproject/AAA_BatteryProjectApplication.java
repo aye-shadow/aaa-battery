@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -14,11 +15,12 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import io.github.cdimascio.dotenv.Dotenv;
 
 @SpringBootApplication
+@EnableScheduling
 @ComponentScan(basePackages = "com.aaa_battery.aaa_batteryproject")
 @EntityScan(basePackages = {
     "com.aaa_battery.aaa_batteryproject.user.model",
     "com.aaa_battery.aaa_batteryproject.borrows.model",
-    "com.aaa_battery.aaa_batteryproject.subscription.model",
+    "com.aaa_battery.aaa_batteryproject.fines.model",
     "com.aaa_battery.aaa_batteryproject.item.itemdescriptions.models",
     "com.aaa_battery.aaa_batteryproject.item.model",
     "com.aaa_battery.aaa_batteryproject.requests.model",
@@ -31,7 +33,7 @@ import io.github.cdimascio.dotenv.Dotenv;
     "com.aaa_battery.aaa_batteryproject.item.repository",
     "com.aaa_battery.aaa_batteryproject.borrows.repository",
     "com.aaa_battery.aaa_batteryproject.requests.repository",
-    "com.aaa_battery.aaa_batteryproject.subscription.repository"
+    "com.aaa_battery.aaa_batteryproject.fines.repository"
 })
 @EnableWebMvc
 public class AAA_BatteryProjectApplication {
@@ -57,7 +59,7 @@ public class AAA_BatteryProjectApplication {
     public class HomeResource {
         @GetMapping("/")
         public String home() {
-            return "<h1>Welcome</h1>";
+            return "<h1>Welcome To AAA_Battery Library!</h1>";
         }
     }
 }
