@@ -1,6 +1,7 @@
 package com.aaa_battery.aaa_batteryproject.authentication.util;
 
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import com.aaa_battery.aaa_batteryproject.authentication.service.AuthenticationService;
 import com.aaa_battery.aaa_batteryproject.security.jwt.services.JwtService;
@@ -40,15 +41,16 @@ public class LoginTest {
             .thenThrow(new IllegalArgumentException("An unexpected error occurred during login"));
     }
 
-    public static void loginUser(AuthenticationService authenticationService, JwtService jwtService, MockMvc mockMvc, String jwtString, String email, String password, Role role) throws Exception {
-        mockMvc.perform(post("/api/auth/login")
+    public static MvcResult loginUser(AuthenticationService authenticationService, JwtService jwtService, MockMvc mockMvc, String jwtString, String email, String password, Role role) throws Exception {
+        return mockMvc.perform(post("/api/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"email\":\"" + email + "\",\"password\":\"" + password + "\",\"role\":\"" + role + "\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").value(jwtString))
                 .andExpect(jsonPath("$.message").value("Login successful"))
                 .andExpect(jsonPath("$.email").value(email))
-                .andExpect(jsonPath("$.role").value(role.toString()));
+                .andExpect(jsonPath("$.role").value(role.toString()))
+                .andReturn();
     }
 
     public static void secondLogin(AuthenticationService authenticationService, JwtService jwtService, MockMvc mockMvc, String jwtString, String email, String password, Role role) throws Exception {
