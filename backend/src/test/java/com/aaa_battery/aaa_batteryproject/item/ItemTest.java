@@ -1,4 +1,4 @@
-package com.aaa_battery.aaa_batteryproject.item.blackbox;
+package com.aaa_battery.aaa_batteryproject.item;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class ItemBTest {
+public class ItemTest {
 
     @Autowired
     private MockMvc mockMvc;

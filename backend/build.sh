@@ -17,5 +17,8 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
+# Generate JaCoCo report
+mvn jacoco:report
+
 # Run Maven spring-boot:run
 # mvn spring-boot:run
