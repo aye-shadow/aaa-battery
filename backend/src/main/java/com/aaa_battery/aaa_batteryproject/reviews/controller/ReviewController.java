@@ -14,10 +14,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.aaa_battery.aaa_batteryproject.reviews.dto.ReviewRequestDTO;
+import com.aaa_battery.aaa_batteryproject.reviews.dto.ReviewCreateRequestDTO;
 import com.aaa_battery.aaa_batteryproject.reviews.dto.ReviewResponseDTO;
+import com.aaa_battery.aaa_batteryproject.reviews.dto.ReviewUpdateRequestDTO;
 import com.aaa_battery.aaa_batteryproject.reviews.service.ReviewService;
 import com.aaa_battery.aaa_batteryproject.user.model.BorrowerEntity;
 import com.aaa_battery.aaa_batteryproject.user.services.UserService;
@@ -33,7 +35,7 @@ public class ReviewController {
     private UserService userService;
     
     @PostMapping("/borrower/new-review")
-    public ResponseEntity<?> createReview(@RequestBody ReviewRequestDTO reviewDTO) {
+    public ResponseEntity<?> createReview(@RequestBody ReviewCreateRequestDTO reviewDTO) {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             BorrowerEntity borrower = (BorrowerEntity) userService.loadUserByUsername(auth.getName());
@@ -77,19 +79,45 @@ public class ReviewController {
         return ResponseEntity.ok(reviews);
     }
     
-    /**
-     * Update an existing review
-     */
-    @PutMapping("/{reviewId}")
+    @PutMapping("/borrower/update-review/{reviewId}")
     public ResponseEntity<ReviewResponseDTO> updateReview(
             @PathVariable Long reviewId,
-            @RequestBody ReviewRequestDTO reviewDTO) {
+            @RequestBody ReviewUpdateRequestDTO reviewDTO) {
         
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         BorrowerEntity borrower = (BorrowerEntity) userService.loadUserByUsername(auth.getName());
         
         ReviewResponseDTO updatedReview = reviewService.updateReview(borrower, reviewId, reviewDTO);
         return ResponseEntity.ok(updatedReview);
+    }
+    @DeleteMapping("/borrower/delete-review/{reviewId}")
+    public ResponseEntity<?> deleteReview(@PathVariable Long reviewId) {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            
+            // Check if user is authenticated
+            if (auth == null || !auth.isAuthenticated()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("No user logged in");
+            }
+            
+            BorrowerEntity borrower = (BorrowerEntity) userService.loadUserByUsername(auth.getName());
+            
+            boolean deleted = reviewService.deleteReview(borrower, reviewId);
+            
+            if (deleted) {
+                return ResponseEntity.ok("Review deleted successfully");
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Review not found or you are not authorized to delete this review");
+            }
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body("Invalid review ID: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error deleting review: " + e.getMessage());
+        }
     }
     
     /**
@@ -99,17 +127,5 @@ public class ReviewController {
     public ResponseEntity<List<ReviewResponseDTO>> getReviewsForItem(@PathVariable Integer itemDescriptionId) {
         List<ReviewResponseDTO> reviews = reviewService.getReviewsForItem(itemDescriptionId);
         return ResponseEntity.ok(reviews);
-    }
-    
-    /**
-     * Delete a review
-     */
-    @DeleteMapping("/{reviewId}")
-    public ResponseEntity<Void> deleteReview(@PathVariable Long reviewId) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        BorrowerEntity borrower = (BorrowerEntity) userService.loadUserByUsername(auth.getName());
-        
-        reviewService.deleteReview(borrower, reviewId);
-        return ResponseEntity.noContent().build();
     }
 }

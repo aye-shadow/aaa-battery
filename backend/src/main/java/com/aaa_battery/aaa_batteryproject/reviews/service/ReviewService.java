@@ -12,8 +12,9 @@ import com.aaa_battery.aaa_batteryproject.borrows.model.BorrowEntity;
 import com.aaa_battery.aaa_batteryproject.borrows.model.BorrowEntity.BorrowStatus;
 import com.aaa_battery.aaa_batteryproject.borrows.repository.BorrowRepository;
 import com.aaa_battery.aaa_batteryproject.item.itemdescriptions.models.ItemDescriptionEntity;
-import com.aaa_battery.aaa_batteryproject.reviews.dto.ReviewRequestDTO;
+import com.aaa_battery.aaa_batteryproject.reviews.dto.ReviewCreateRequestDTO;
 import com.aaa_battery.aaa_batteryproject.reviews.dto.ReviewResponseDTO;
+import com.aaa_battery.aaa_batteryproject.reviews.dto.ReviewUpdateRequestDTO;
 import com.aaa_battery.aaa_batteryproject.reviews.model.ReviewEntity;
 import com.aaa_battery.aaa_batteryproject.reviews.repository.ReviewRepository;
 import com.aaa_battery.aaa_batteryproject.user.model.BorrowerEntity;
@@ -33,7 +34,7 @@ public class ReviewService {
      * Create a new review
      */
     @Transactional
-    public ReviewResponseDTO createReview(BorrowerEntity borrower, ReviewRequestDTO reviewDTO) {
+    public ReviewResponseDTO createReview(BorrowerEntity borrower, ReviewCreateRequestDTO reviewDTO) {
         // Find the borrow entity first
         BorrowEntity borrow = borrowRepository.findById(reviewDTO.getBorrowId())
                 .orElseThrow(() -> new EntityNotFoundException("Borrow with ID " + reviewDTO.getBorrowId() + " not found"));
@@ -76,7 +77,7 @@ public class ReviewService {
      * Update an existing review
      */
     @Transactional
-    public ReviewResponseDTO updateReview(BorrowerEntity borrower, Long reviewId, ReviewRequestDTO reviewDTO) {
+    public ReviewResponseDTO updateReview(BorrowerEntity borrower, Long reviewId, ReviewUpdateRequestDTO reviewDTO) {
         // Find the review
         ReviewEntity review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new EntityNotFoundException("Review with ID " + reviewId + " not found"));
@@ -130,18 +131,29 @@ public class ReviewService {
      * Delete a review
      */
     @Transactional
-    public void deleteReview(BorrowerEntity borrower, Long reviewId) {
-        // Find the review
-        ReviewEntity review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new EntityNotFoundException("Review with ID " + reviewId + " not found"));
-        
-        // Validate that the reviewer is the owner of the review
-        if (!review.getReviewer().equals(borrower)) {
-            throw new IllegalArgumentException("You can only delete your own reviews");
+    public boolean deleteReview(BorrowerEntity borrower, Long reviewId) {
+        try {
+            // Find the review
+            ReviewEntity review = reviewRepository.findById(reviewId)
+                    .orElse(null);
+            
+            // Check if review exists
+            if (review == null) {
+                return false; // Review not found
+            }
+            
+            // Validate that the reviewer is the owner of the review
+            if (!review.getReviewer().equals(borrower)) {
+                return false; // Not authorized to delete
+            }
+            
+            // Delete the review
+            reviewRepository.delete(review);
+            return true; // Successfully deleted
+        } catch (Exception e) {
+            // Log the exception if needed
+            return false; // Failed to delete due to some other error
         }
-        
-        // Delete the review
-        reviewRepository.delete(review);
     }
     
     /**
