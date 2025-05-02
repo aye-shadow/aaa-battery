@@ -19,4 +19,8 @@ public class ItemDescriptionService {
     public void saveDescription(ItemDescriptionEntity description) {
         itemDescriptionRepository.save(description);
     }
+
+    public ItemDescriptionEntity findById(Integer descriptionId) {
+        return itemDescriptionRepository.findById(descriptionId).orElse(null);
+    }
 }

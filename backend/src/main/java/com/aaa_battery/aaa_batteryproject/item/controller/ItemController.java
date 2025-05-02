@@ -132,6 +132,154 @@ public class ItemController {
         }
     }
 
+    @PutMapping("/librarian/edit-item")
+    public ResponseEntity<String> editItem(@RequestBody Map<String, Object> requestData) {
+        try {
+            // Check for the required descriptionId field
+            if (requestData.get("descriptionId") == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Missing required field: descriptionId");
+            }
+            
+            Integer descriptionId;
+            try {
+                descriptionId = Integer.parseInt(requestData.get("descriptionId").toString());
+            } catch (NumberFormatException e) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Invalid descriptionId format");
+            }
+            
+            // Check if the description exists
+            ItemDescriptionEntity existingDescription = itemDescriptionService.findById(descriptionId);
+            if (existingDescription == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Item description not found with ID: " + descriptionId);
+            }
+            
+            // Update the basic fields if provided
+            if (requestData.containsKey("itemName") && requestData.get("itemName") != null) {
+                existingDescription.setItemName((String) requestData.get("itemName"));
+            }
+            if (requestData.containsKey("genre") && requestData.get("genre") != null) {
+                existingDescription.setGenre((String) requestData.get("genre"));
+            }
+            if (requestData.containsKey("blurb") && requestData.get("blurb") != null) {
+                existingDescription.setBlurb((String) requestData.get("blurb"));
+            }
+            if (requestData.containsKey("date") && requestData.get("date") != null) {
+                existingDescription.setDate(java.time.LocalDateTime.parse((String) requestData.get("date")));
+            }
+            if (requestData.containsKey("imageUrl") && requestData.get("imageUrl") != null) {
+                existingDescription.setImageUrl((String) requestData.get("imageUrl"));
+            }
+            
+            // Update type-specific fields
+            if (existingDescription instanceof BookDescription) {
+                BookDescription bookDesc = (BookDescription) existingDescription;
+                if (requestData.containsKey("authorName") && requestData.get("authorName") != null) {
+                    bookDesc.setAuthorName((String) requestData.get("authorName"));
+                }
+                if (requestData.containsKey("publisher") && requestData.get("publisher") != null) {
+                    bookDesc.setPublisher((String) requestData.get("publisher"));
+                }
+            } else if (existingDescription instanceof AudiobookDescription) {
+                AudiobookDescription audioDesc = (AudiobookDescription) existingDescription;
+                if (requestData.containsKey("authorName") && requestData.get("authorName") != null) {
+                    audioDesc.setAuthorName((String) requestData.get("authorName"));
+                }
+                if (requestData.containsKey("publisher") && requestData.get("publisher") != null) {
+                    audioDesc.setPublisher((String) requestData.get("publisher"));
+                }
+                if (requestData.containsKey("narrator") && requestData.get("narrator") != null) {
+                    audioDesc.setNarratedBy((String) requestData.get("narrator"));
+                }
+                if (requestData.containsKey("duration") && requestData.get("duration") != null) {
+                    audioDesc.setDuration(ItemDescriptionEntity.parseDuration((String) requestData.get("duration")));
+                }
+            } else if (existingDescription instanceof DVDDescription) {
+                DVDDescription dvdDesc = (DVDDescription) existingDescription;
+                if (requestData.containsKey("producer") && requestData.get("producer") != null) {
+                    dvdDesc.setProducer((String) requestData.get("producer"));
+                }
+                if (requestData.containsKey("director") && requestData.get("director") != null) {
+                    dvdDesc.setDirector((String) requestData.get("director"));
+                }
+                if (requestData.containsKey("duration") && requestData.get("duration") != null) {
+                    dvdDesc.setDuration(ItemDescriptionEntity.parseDuration((String) requestData.get("duration")));
+                }
+            }
+            
+            // Update copies count if needed
+            if (requestData.containsKey("totalCopies")) {
+                try {
+                    int requestedCopies = Integer.parseInt(requestData.get("totalCopies").toString());
+                    
+                    // Get current copies
+                    List<ItemEntity> currentItems = itemService.getItemsByDescriptionId(descriptionId);
+                    int currentCopies = currentItems.size();
+                    
+                    if (requestedCopies > currentCopies) {
+                        // Add more copies
+                        int copiesToAdd = requestedCopies - currentCopies;
+                        for (int i = 0; i < copiesToAdd; i++) {
+                            ItemEntity newItem = new ItemEntity();
+                            newItem.setAvailability(true);
+                            newItem.setDescription(existingDescription);
+                            itemService.addItem(newItem);
+                        }
+                    } else if (requestedCopies < currentCopies) {
+                        // Remove some copies - prioritize removing available copies first
+                        int copiesToRemove = currentCopies - requestedCopies;
+                        if (copiesToRemove > 0) {
+                            // First, get all available items
+                            List<ItemEntity> availableItems = currentItems.stream()
+                                .filter(ItemEntity::isAvailability)
+                                .collect(Collectors.toList());
+                            
+                            // If we have enough available items, remove those first
+                            int availableToRemove = Math.min(copiesToRemove, availableItems.size());
+                            for (int i = 0; i < availableToRemove; i++) {
+                                itemService.deleteItem(availableItems.get(i).getItemId());
+                            }
+                            
+                            // If we still need to remove more, remove from checked-out items
+                            if (availableToRemove < copiesToRemove) {
+                                int checkedOutToRemove = copiesToRemove - availableToRemove;
+                                if (checkedOutToRemove > 0) {
+                                    // Check if there are any checked-out items that would need to be removed
+                                    boolean hasCheckedOutItems = currentItems.stream()
+                                        .anyMatch(item -> !item.isAvailability());
+                                    // Consider implementing a more sophisticated logic here
+                                    // for handling checked-out items that need to be removed
+                                    if (hasCheckedOutItems) {
+                                        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                                            .body("Cannot remove copies that are currently checked out");
+                                    } else {
+                                        // This case should not be reached if we're in this branch,
+                                        // but added for completeness
+                                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                            .body("Error processing item removal");
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (NumberFormatException e) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Invalid totalCopies format");
+                }
+            }
+            
+            // Save the updated description
+            itemDescriptionService.saveDescription(existingDescription);
+            
+            return ResponseEntity.ok("Item updated successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Failed to update item: " + e.getMessage());
+        }
+    }
+
     @GetMapping("/users/view-items")
     public ResponseEntity<List<Map<String, Object>>> viewItems() {
         try {

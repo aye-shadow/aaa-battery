@@ -171,7 +171,7 @@ public class ItemDescriptionEntity {
         description.setItemType((String) requestData.get("type"));
     }
     
-    private static Duration parseDuration(String durationString) {
+    public static Duration parseDuration(String durationString) {
         if (durationString == null) {
             return null;
         }

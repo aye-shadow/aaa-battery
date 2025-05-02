@@ -1,6 +1,7 @@
 package com.aaa_battery.aaa_batteryproject.item;
 
 import com.aaa_battery.aaa_batteryproject.item.repository.ItemRepository;
+import com.aaa_battery.aaa_batteryproject.item.service.ItemService;
 import com.aaa_battery.aaa_batteryproject.item.util.ItemUtil;
 
 import org.junit.jupiter.api.Test;
@@ -29,6 +30,9 @@ public class ItemTest {
 
     @Autowired
     private ItemRepository itemRepository;
+
+    @Autowired
+    private ItemService itemService;
 
     @Test
     @WithMockUser(username = "i220899@nu.edu.pk", roles = {"LIBRARIAN"})
@@ -300,5 +304,226 @@ public class ItemTest {
                     .get("/api/items/users/view-item")
             )
             .andExpect(status().isBadRequest());
+    }
+    
+    @Test
+    @WithMockUser(username = "i220899@nu.edu.pk", roles = {"LIBRARIAN"})
+    void testEditItemSuccess() throws Exception {
+        // First add a book
+        testLoginLibrarianAndAddBook();
+        
+        // Get the descriptionId of the added book
+        var allItems = itemRepository.findAll();
+        assert !allItems.isEmpty();
+        Integer descriptionId = allItems.get(0).getDescription().getDescriptionId();
+        
+        // Prepare edit data
+        String editJson = """
+            {
+                "descriptionId": %d,
+                "itemName": "Updated Book Title",
+                "genre": "Science Fiction",
+                "blurb": "Updated blurb text",
+                "imageUrl": "http://example.com/updated.jpg",
+                "authorName": "Updated Author",
+                "publisher": "Updated Publisher"
+            }
+        """.formatted(descriptionId);
+        
+        // Perform the edit
+        mockMvc.perform(
+                org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                    .put("/api/items/librarian/edit-item")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(editJson)
+            )
+            .andExpect(status().isOk())
+            .andExpect(result -> {
+                String response = result.getResponse().getContentAsString();
+                assert response.contains("Item updated successfully");
+            });
+        
+        // Verify the changes by getting the item
+        mockMvc.perform(
+                org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                    .get("/api/items/users/view-item")
+                    .param("descriptionId", descriptionId.toString())
+            )
+            .andExpect(status().isOk())
+            .andExpect(result -> {
+                String json = result.getResponse().getContentAsString();
+                assert json.contains("Updated Book Title");
+                assert json.contains("Science Fiction");
+                assert json.contains("Updated blurb text");
+            });
+    }
+
+    @Test
+    @WithMockUser(username = "i220899@nu.edu.pk", roles = {"LIBRARIAN"})
+    void testEditItemIncreaseCopies() throws Exception {
+        // Clear any existing items to ensure a clean state
+        itemRepository.deleteAll();
+        
+        // Add a new book with 2 copies
+        testLoginLibrarianAndAddBook();
+        
+        // Get the descriptionId
+        var allItems = itemRepository.findAll();
+        assert !allItems.isEmpty() : "No items found after adding book";
+        Integer descriptionId = allItems.get(0).getDescription().getDescriptionId();
+        
+        // Get current number of copies
+        int initialCopies = itemService.getItemsByDescriptionId(descriptionId).size();
+        assert initialCopies == 2 : "Expected 2 initial copies, but got " + initialCopies;
+        
+        // Prepare edit data to increase copies to 5
+        String editJson = String.format("""
+            {
+                "descriptionId": %d,
+                "totalCopies": 5
+            }""", descriptionId);
+        
+        // Perform the edit
+        mockMvc.perform(
+                org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                    .put("/api/items/librarian/edit-item")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(editJson)
+            )
+            .andExpect(status().isOk())
+            .andExpect(result -> {
+                String responseBody = result.getResponse().getContentAsString();
+                assert responseBody.contains("Item updated successfully") : 
+                       "Expected success message, but got: " + responseBody;
+            });
+        
+        // Verify the increase in copies
+        int updatedCopies = itemService.getItemsByDescriptionId(descriptionId).size();
+        assert updatedCopies == 5 : "Expected 5 copies after update, but got " + updatedCopies;
+        assert updatedCopies > initialCopies : "Copy count did not increase";
+    }
+    
+    @Test
+    @WithMockUser(username = "i220899@nu.edu.pk", roles = {"LIBRARIAN"})
+    void testEditItemDecreaseCopies() throws Exception {
+        // First add a book with 2 copies
+        testLoginLibrarianAndAddBook();
+        
+        // Get the descriptionId
+        var allItems = itemRepository.findAll();
+        Integer descriptionId = allItems.get(0).getDescription().getDescriptionId();
+        
+        // Prepare edit data to decrease copies to 1
+        String editJson = """
+            {
+                "descriptionId": %d,
+                "totalCopies": 1
+            }
+        """.formatted(descriptionId);
+        
+        // Perform the edit
+        mockMvc.perform(
+                org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                    .put("/api/items/librarian/edit-item")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(editJson)
+            )
+            .andExpect(status().isOk());
+        
+        // Verify the decrease in copies
+        int updatedCopies = itemService.getItemsByDescriptionId(descriptionId).size();
+        assert updatedCopies == 1;
+    }
+
+    @Test
+    @WithMockUser(username = "i220899@nu.edu.pk", roles = {"LIBRARIAN"})
+    void testEditItemMissingDescriptionId() throws Exception {
+        String editJson = """
+            {
+                "itemName": "Updated Book Title",
+                "genre": "Science Fiction"
+            }
+        """;
+        
+        mockMvc.perform(
+                org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                    .put("/api/items/librarian/edit-item")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(editJson)
+            )
+            .andExpect(status().isBadRequest())
+            .andExpect(result -> {
+                String response = result.getResponse().getContentAsString();
+                assert response.contains("Missing required field: descriptionId");
+            });
+    }
+
+    @Test
+    @WithMockUser(username = "i220899@nu.edu.pk", roles = {"LIBRARIAN"})
+    void testEditNonExistentItem() throws Exception {
+        String editJson = """
+            {
+                "descriptionId": 99999,
+                "itemName": "This Should Fail",
+                "genre": "Error"
+            }
+        """;
+        
+        mockMvc.perform(
+                org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                    .put("/api/items/librarian/edit-item")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(editJson)
+            )
+            .andExpect(status().isNotFound())
+            .andExpect(result -> {
+                String response = result.getResponse().getContentAsString();
+                assert response.contains("Item description not found");
+            });
+    }
+
+    @Test
+    @WithMockUser(username = "student@nu.edu.pk", roles = {"BORROWER"})
+    void testNonLibrarianCannotEditItem() throws Exception {
+        // First add a book as a librarian
+        String bookJson = """
+            {
+                "itemName": "Test Book",
+                "type": "book",
+                "genre": "Fiction",
+                "blurb": "A test book blurb.",
+                "date": "2024-01-01T00:00:00",
+                "totalCopies": 2,
+                "imageUrl": "http://example.com/test.jpg",
+                "authorName": "Test Author",
+                "publisher": "Test Publisher"
+            }
+        """;
+        
+        mockMvc.perform(post("/api/items/librarian/add-item")
+                .with(user("i220899@nu.edu.pk").roles("LIBRARIAN"))
+                .contentType("application/json")
+                .content(bookJson))
+            .andExpect(status().isOk());
+        
+        // Get the descriptionId
+        var allItems = itemRepository.findAll();
+        Integer descriptionId = allItems.get(0).getDescription().getDescriptionId();
+        
+        // Try to edit as borrower
+        String editJson = """
+            {
+                "descriptionId": %d,
+                "itemName": "Unauthorized Edit"
+            }
+        """.formatted(descriptionId);
+        
+        mockMvc.perform(
+                org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                    .put("/api/items/librarian/edit-item")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(editJson)
+            )
+            .andExpect(status().isForbidden());
     }
 }
