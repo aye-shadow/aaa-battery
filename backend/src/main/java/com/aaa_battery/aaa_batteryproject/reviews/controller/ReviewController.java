@@ -90,6 +90,7 @@ public class ReviewController {
         ReviewResponseDTO updatedReview = reviewService.updateReview(borrower, reviewId, reviewDTO);
         return ResponseEntity.ok(updatedReview);
     }
+    
     @DeleteMapping("/borrower/delete-review/{reviewId}")
     public ResponseEntity<?> deleteReview(@PathVariable Long reviewId) {
         try {
@@ -120,10 +121,7 @@ public class ReviewController {
         }
     }
     
-    /**
-     * Get reviews for a specific item
-     */
-    @GetMapping("/item/{itemDescriptionId}")
+    @GetMapping("/users/all-reviews/{itemDescriptionId}")
     public ResponseEntity<List<ReviewResponseDTO>> getReviewsForItem(@PathVariable Integer itemDescriptionId) {
         List<ReviewResponseDTO> reviews = reviewService.getReviewsForItem(itemDescriptionId);
         return ResponseEntity.ok(reviews);

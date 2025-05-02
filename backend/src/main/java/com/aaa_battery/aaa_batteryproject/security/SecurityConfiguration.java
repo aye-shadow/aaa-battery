@@ -47,7 +47,8 @@ public class SecurityConfiguration {
             }))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
-                    "/", "/actuator/mappings", "/api/auth/**", "/api/items/users/**"
+                    "/", "/actuator/mappings", "/api/auth/**", "/api/items/users/**", 
+                    "/api/reviews/users/**" 
                     ).permitAll()
                 .requestMatchers(
                     "/api/librarian/**", "/api/items/librarian/**", "/api/request/librarian/**", 
