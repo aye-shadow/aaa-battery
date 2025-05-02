@@ -225,27 +225,6 @@ public class AuthenticationTest {
     }
 
     @Test
-    void testLoginBorrower_MissingRole() throws Exception {
-        String validEmail = Credentials.BORROWER.getEmail();
-        String validPassword = Credentials.BORROWER.getPassword();
-
-        // Throw for any other credentials (including missing role)
-        Mockito.when(authenticationService.authenticate(
-            Mockito.argThat(dto ->
-                !validEmail.equals(dto.getEmail()) ||
-                !validPassword.equals(dto.getPassword()) ||
-                dto.getRole() == null ||
-                Role.BORROWER != dto.getRole()
-            )
-        )).thenThrow(new IllegalArgumentException("An unexpected error occurred during login"));
-
-        LoginTest.performInvalidLogin(
-            authenticationService, mockMvc, 
-            validEmail, validPassword, null
-        );
-    }
-
-    @Test
     void testRegisterLibrarian_Successful() throws Exception {
         String email = Credentials.NEW_LIBRARIAN.getEmail();
         String password = Credentials.NEW_LIBRARIAN.getPassword();

@@ -2,11 +2,14 @@ package com.aaa_battery.aaa_batteryproject.user.dtos;
 
 import com.aaa_battery.aaa_batteryproject.user.roles.Role;
 
+import io.micrometer.common.lang.Nullable;
+
 public class LoginUserDto {
     private String email;
     
     private String password;
 
+    @Nullable
     private Role role;
 
     public LoginUserDto() {

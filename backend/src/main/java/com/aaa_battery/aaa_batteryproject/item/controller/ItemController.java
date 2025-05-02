@@ -39,6 +39,45 @@ public class ItemController {
             // Book: authorName (String), publisher (String)
             // Audiobook: authorName (String), publisher (String), narrator (String), duration (String: "HH:mm:ss")
             // DVD: producer (String), director (String), duration (String: "HH:mm:ss")
+
+            String[] requiredFields = {"itemName", "type", "genre", "blurb", "date", "totalCopies", "imageUrl"};
+            for (String field : requiredFields) {
+                Object value = requestData.get(field);
+                if (value == null || (value instanceof String && ((String) value).trim().isEmpty())) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Missing or empty required field: " + field);
+                }
+            }
+            String type = (String) requestData.get("type");
+            if (type == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing item type.");
+            }
+            switch (type.toLowerCase()) {
+                case "book" -> {
+                    if (requestData.get("authorName") == null || ((String)requestData.get("authorName")).trim().isEmpty()
+                        || requestData.get("publisher") == null || ((String)requestData.get("publisher")).trim().isEmpty()) {
+                        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body("Missing or empty required field for book: authorName or publisher");
+                    }
+                }
+                case "audiobook" -> {
+                    if (requestData.get("authorName") == null || ((String)requestData.get("authorName")).trim().isEmpty()
+                        || requestData.get("publisher") == null || ((String)requestData.get("publisher")).trim().isEmpty()
+                        || requestData.get("narrator") == null || ((String)requestData.get("narrator")).trim().isEmpty()
+                        || requestData.get("duration") == null || ((String)requestData.get("duration")).trim().isEmpty()) {
+                        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body("Missing or empty required field for audiobook: authorName, publisher, narrator, or duration");
+                    }
+                }
+                case "dvd" -> {
+                    if (requestData.get("producer") == null || ((String)requestData.get("producer")).trim().isEmpty()
+                        || requestData.get("director") == null || ((String)requestData.get("director")).trim().isEmpty()
+                        || requestData.get("duration") == null || ((String)requestData.get("duration")).trim().isEmpty()) {
+                        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body("Missing or empty required field for dvd: producer, director, or duration");
+                    }
+                }
+            }
             
             // Extract values from the request map
             String itemName = (String) requestData.get("itemName");
@@ -46,7 +85,7 @@ public class ItemController {
             if (!(typeObj instanceof String) || !ItemType.isValidType((String) typeObj)) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid item type provided.");
             }
-            ItemType type = ItemType.valueOf(((String) typeObj).toUpperCase());
+            ItemType itemType = ItemType.valueOf(((String) typeObj).toUpperCase());
             
             // Get the total copies to create
             int totalCopies = 1; // Default to 1 if not specified
@@ -62,7 +101,7 @@ public class ItemController {
             }
             
             // Check if description already exists
-            ItemDescriptionEntity existingDescription = itemDescriptionService.findByNameAndItemType(itemName, type);
+            ItemDescriptionEntity existingDescription = itemDescriptionService.findByNameAndItemType(itemName, itemType);
 
             ItemDescriptionEntity description;
             if (existingDescription != null)

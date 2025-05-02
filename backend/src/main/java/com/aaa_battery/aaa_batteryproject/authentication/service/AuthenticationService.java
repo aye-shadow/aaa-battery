@@ -83,6 +83,10 @@ public class AuthenticationService {
         UserEntity user = userRepository.findByEmail(input.getEmail())
                 .orElseThrow();
     
+        if (user.getRole() == null) {
+            throw new IllegalArgumentException("Invalid role for the provided credentials");
+        }
+
         // Validate the role
         if (!user.getRole().equals(input.getRole())) {
             throw new IllegalArgumentException("Invalid role for the provided credentials");

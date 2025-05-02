@@ -7,6 +7,9 @@ import com.aaa_battery.aaa_batteryproject.authentication.service.AuthenticationS
 import com.aaa_battery.aaa_batteryproject.security.jwt.services.JwtService;
 import com.aaa_battery.aaa_batteryproject.user.model.UserEntity;
 import com.aaa_battery.aaa_batteryproject.user.roles.Role;
+
+import io.micrometer.common.lang.Nullable;
+
 import com.aaa_battery.aaa_batteryproject.user.dtos.LoginUserDto;
 
 import static org.mockito.ArgumentMatchers.any;
