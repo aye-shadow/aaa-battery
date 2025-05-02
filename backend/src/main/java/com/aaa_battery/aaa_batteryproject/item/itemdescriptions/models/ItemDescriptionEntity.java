@@ -33,6 +33,9 @@ public class ItemDescriptionEntity {
     private int totalCopies;
     private String imageUrl;
 
+    // Add cached average rating field
+    private Double averageRating = 0.0;
+
     @OneToMany(mappedBy = "itemDescription", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<ReviewEntity> reviews = new ArrayList<>();
@@ -108,28 +111,40 @@ public class ItemDescriptionEntity {
     
     public void setReviews(List<ReviewEntity> reviews) {
         this.reviews = reviews;
+        recalculateAverageRating(0);
     }
-    
+
     public void addReview(ReviewEntity review) {
         reviews.add(review);
         review.setItemDescription(this);
+        recalculateAverageRating(0);
     }
-    
+
     public void removeReview(ReviewEntity review) {
         reviews.remove(review);
         review.setItemDescription(null);
+        recalculateAverageRating(0);
+    }
+        
+    // Update the getAverageRating method to return the cached value
+    public Double getAverageRating() {
+        return averageRating;
     }
     
-    // Add a method to calculate average rating
-    public Double getAverageRating() {
+    public void setAverageRating(Double averageRating) {
+        this.averageRating = averageRating;
+    }
+    
+    // Add a method to recalculate the average rating
+    public void recalculateAverageRating(Integer newRating) {
         if (reviews.isEmpty()) {
-            return 0.0;
+            this.averageRating = newRating * 1.0;
+        } else {
+            this.averageRating = reviews.stream()
+                .mapToInt(ReviewEntity::getRating)
+                .average()
+                .orElse(0.0);
         }
-        
-        return reviews.stream()
-            .mapToInt(ReviewEntity::getRating)
-            .average()
-            .orElse(0.0);
     }
 
     // Helper method to create description based on type

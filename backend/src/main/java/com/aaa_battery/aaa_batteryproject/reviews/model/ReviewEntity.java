@@ -86,7 +86,19 @@ public class ReviewEntity {
     }
 
     public void setItemDescription(ItemDescriptionEntity itemDescription) {
+        // If there was a previous item description, recalculate its rating
+        if (this.itemDescription != null && this.itemDescription != itemDescription) {
+            ItemDescriptionEntity oldDescription = this.itemDescription;
+            this.itemDescription = null;
+            oldDescription.recalculateAverageRating(0);
+        }
+        
         this.itemDescription = itemDescription;
+        
+        // Recalculate the new item description's rating if it exists
+        if (itemDescription != null) {
+            itemDescription.recalculateAverageRating(0);
+        }
     }
 
     public BorrowEntity getBorrow() {
@@ -103,6 +115,10 @@ public class ReviewEntity {
 
     public void setRating(Integer rating) {
         this.rating = rating;
+        // Recalculate the average if the item description is set
+        if (this.itemDescription != null) {
+            this.itemDescription.recalculateAverageRating(rating);
+        }
     }
 
     public String getComment() {

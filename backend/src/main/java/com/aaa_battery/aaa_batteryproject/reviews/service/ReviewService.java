@@ -12,6 +12,7 @@ import com.aaa_battery.aaa_batteryproject.borrows.model.BorrowEntity;
 import com.aaa_battery.aaa_batteryproject.borrows.model.BorrowEntity.BorrowStatus;
 import com.aaa_battery.aaa_batteryproject.borrows.repository.BorrowRepository;
 import com.aaa_battery.aaa_batteryproject.item.itemdescriptions.models.ItemDescriptionEntity;
+import com.aaa_battery.aaa_batteryproject.item.itemdescriptions.repository.ItemDescriptionRepository;
 import com.aaa_battery.aaa_batteryproject.reviews.dto.ReviewCreateRequestDTO;
 import com.aaa_battery.aaa_batteryproject.reviews.dto.ReviewResponseDTO;
 import com.aaa_battery.aaa_batteryproject.reviews.dto.ReviewUpdateRequestDTO;
@@ -29,48 +30,88 @@ public class ReviewService {
     
     @Autowired
     private BorrowRepository borrowRepository;
+
+    @Autowired
+    private ItemDescriptionRepository itemDescriptionRepository;
     
     /**
      * Create a new review
      */
     @Transactional
     public ReviewResponseDTO createReview(BorrowerEntity borrower, ReviewCreateRequestDTO reviewDTO) {
-        // Find the borrow entity first
-        BorrowEntity borrow = borrowRepository.findById(reviewDTO.getBorrowId())
-                .orElseThrow(() -> new EntityNotFoundException("Borrow with ID " + reviewDTO.getBorrowId() + " not found"));
+        try {
+            // Find the borrow entity first
+            BorrowEntity borrow = borrowRepository.findById(reviewDTO.getBorrowId())
+                    .orElseThrow(() -> new EntityNotFoundException("Borrow with ID " + reviewDTO.getBorrowId() + " not found"));
+            
+            // Validate that the borrow status is RETURNED
+            if (borrow.getStatus() != BorrowStatus.RETURNED) {
+                throw new IllegalArgumentException("You can only review items that have been returned");
+            }
         
-        // Validate that the borrow status is RETURNED
-        if (borrow.getStatus() != BorrowStatus.RETURNED) {
-            throw new IllegalArgumentException("You can only review items that have been returned");
+            // Get the correct itemDescriptionId from the borrow record
+            Integer itemDescriptionId = borrow.getItem().getDescription().getDescriptionId();
+            
+            // Check for duplicate review using the correct itemDescriptionId
+            if (hasReviewedItem(borrower.getId(), itemDescriptionId)) {
+                throw new IllegalArgumentException("You have already reviewed this item");
+            }
+            
+            // Validate that the borrower is the owner of the borrow record
+            if (!borrow.getBorrower().equals(borrower)) {
+                throw new IllegalArgumentException("You can only review items you have borrowed");
+            }
+            
+            // Get the item description
+            ItemDescriptionEntity itemDescription = borrow.getItem().getDescription();
+            
+            // Create the review entity with all required fields
+            ReviewEntity review = new ReviewEntity();
+            review.setReviewer(borrower);
+            review.setItemDescription(itemDescription); // Set itemDescription before saving
+            review.setBorrow(borrow);
+            review.setComment(reviewDTO.getComment());
+            review.setCreatedAt(new Date());
+            // Set rating to null initially to avoid automatic recalculation
+            review.setRating(null);
+            
+            // Save the review first time
+            ReviewEntity savedReview = reviewRepository.save(review);
+            
+            // Now set the rating (this will trigger recalculation in the entity)
+            savedReview.setRating(reviewDTO.getRating());
+            
+            // Save the review again
+            savedReview = reviewRepository.save(savedReview);
+            
+            // Perform manual recalculation to ensure accuracy
+            List<ReviewEntity> allReviews = reviewRepository.findByItemDescription(itemDescription);
+            double sum = 0;
+            int count = 0;
+            
+            for (ReviewEntity rev : allReviews) {
+                if (rev.getRating() != null) {
+                    sum += rev.getRating();
+                    count++;
+                }
+            }
+            
+            double average = count > 0 ? sum / count : 0;
+            System.out.println("Calculated new average rating: " + average + " (sum=" + sum + ", count=" + count + ")");
+            
+            // Update the average rating directly
+            itemDescription.setAverageRating(average);
+            
+            // Save the item description explicitly
+            itemDescriptionRepository.save(itemDescription);
+            
+            // Convert to DTO and return
+            return convertToDTO(savedReview);
+        } catch (Exception e) {
+            // Add this for better debugging
+            e.printStackTrace();
+            throw e; // Re-throw to let the controller handle it
         }
-
-        // Get the correct itemDescriptionId from the borrow record
-        Integer itemDescriptionId = borrow.getItem().getDescription().getDescriptionId();
-        
-        // Check for duplicate review using the correct itemDescriptionId
-        if (hasReviewedItem(borrower.getId(), itemDescriptionId)) {
-            throw new IllegalArgumentException("You have already reviewed this item");
-        }
-        
-        // Validate that the borrower is the owner of the borrow record
-        if (!borrow.getBorrower().equals(borrower)) {
-            throw new IllegalArgumentException("You can only review items you have borrowed");
-        }
-        
-        // Create the review entity
-        ReviewEntity review = new ReviewEntity();
-        review.setReviewer(borrower);
-        review.setItemDescription(borrow.getItem().getDescription());
-        review.setBorrow(borrow);
-        review.setRating(reviewDTO.getRating());
-        review.setComment(reviewDTO.getComment());
-        review.setCreatedAt(new Date());
-        
-        // Save the review
-        ReviewEntity savedReview = reviewRepository.save(review);
-        
-        // Convert to DTO and return
-        return convertToDTO(savedReview);
     }
     
     /**
@@ -87,6 +128,9 @@ public class ReviewService {
             throw new IllegalArgumentException("You can only update your own reviews");
         }
         
+        // Get the item description for recalculation later
+        ItemDescriptionEntity itemDescription = review.getItemDescription();
+        
         // Update the review details
         review.setRating(reviewDTO.getRating());
         review.setComment(reviewDTO.getComment());
@@ -94,6 +138,27 @@ public class ReviewService {
         
         // Save the updated review
         ReviewEntity updatedReview = reviewRepository.save(review);
+        
+        // Recalculate average rating
+        List<ReviewEntity> allReviews = reviewRepository.findByItemDescription(itemDescription);
+        double sum = 0;
+        int count = 0;
+        
+        for (ReviewEntity rev : allReviews) {
+            if (rev.getRating() != null) {
+                sum += rev.getRating();
+                count++;
+            }
+        }
+        
+        double average = count > 0 ? sum / count : 0;
+        System.out.println("Updated average rating: " + average + " (sum=" + sum + ", count=" + count + ")");
+        
+        // Update the average rating directly
+        itemDescription.setAverageRating(average);
+        
+        // Save the item description explicitly
+        itemDescriptionRepository.save(itemDescription);
         
         // Convert to DTO and return
         return convertToDTO(updatedReview);

@@ -319,6 +319,8 @@ public class ItemController {
                     descMap.put("genre", desc.getGenre());
                     descMap.put("blurb", desc.getBlurb());
                     descMap.put("imageUrl", desc.getImageUrl());
+                    descMap.put("averageRating", desc.getAverageRating());
+                    descMap.put("reviewsCount", desc.getReviews().size());
                     
                     // Add type-specific fields
                     if (desc instanceof BookDescription) {
