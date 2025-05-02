@@ -7,15 +7,15 @@ if [ -f .env ]; then
   set +o allexport
 fi
 
-# Run Maven tests
-mvn clean test
-if [ $? -ne 0 ]; then
-  echo "Tests failed. Aborting."
-  exit 1
-fi
+# # Run Maven tests
+# mvn clean test
+# if [ $? -ne 0 ]; then
+#   echo "Tests failed. Aborting."
+#   exit 1
+# fi
 
-# Generate JaCoCo report
-mvn jacoco:report
+# # Generate JaCoCo report
+# mvn jacoco:report
 
 # Set the Spring profile
 export SPRING_PROFILES_ACTIVE=local

@@ -1,5 +1,6 @@
 package com.aaa_battery.aaa_batteryproject.user.services;
 
+import com.aaa_battery.aaa_batteryproject.user.model.BorrowerEntity;
 import com.aaa_battery.aaa_batteryproject.user.model.UserEntity;
 import com.aaa_battery.aaa_batteryproject.user.repositories.UserRepository;
 
@@ -28,5 +29,9 @@ public class UserService {
         UserEntity user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
         user.setPassword(encodedPassword);
         userRepository.save(user);
+    }
+
+    public BorrowerEntity loadUserByUsername(String name) {
+        return (BorrowerEntity) userRepository.findByEmail(name).orElseThrow(() -> new RuntimeException("User not found"));
     }
 }

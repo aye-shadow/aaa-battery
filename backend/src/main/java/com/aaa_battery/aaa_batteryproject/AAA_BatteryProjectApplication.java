@@ -24,7 +24,8 @@ import io.github.cdimascio.dotenv.Dotenv;
     "com.aaa_battery.aaa_batteryproject.item.itemdescriptions.models",
     "com.aaa_battery.aaa_batteryproject.item.model",
     "com.aaa_battery.aaa_batteryproject.requests.model",
-    "com.aaa_battery.aaa_batteryproject.security.model"
+    "com.aaa_battery.aaa_batteryproject.security.model",
+    "com.aaa_battery.aaa_batteryproject.reviews.model"
 
 })
 @EnableJpaRepositories(basePackages = {
@@ -33,7 +34,8 @@ import io.github.cdimascio.dotenv.Dotenv;
     "com.aaa_battery.aaa_batteryproject.item.repository",
     "com.aaa_battery.aaa_batteryproject.borrows.repository",
     "com.aaa_battery.aaa_batteryproject.requests.repository",
-    "com.aaa_battery.aaa_batteryproject.fines.repository"
+    "com.aaa_battery.aaa_batteryproject.fines.repository",
+    "com.aaa_battery.aaa_batteryproject.reviews.repository"
 })
 @EnableWebMvc
 public class AAA_BatteryProjectApplication {

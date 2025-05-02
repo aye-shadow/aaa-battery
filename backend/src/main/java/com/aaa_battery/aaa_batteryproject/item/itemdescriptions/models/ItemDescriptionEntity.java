@@ -4,9 +4,13 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import com.aaa_battery.aaa_batteryproject.item.model.ItemType;
+import com.aaa_battery.aaa_batteryproject.reviews.model.ReviewEntity;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.*;
 
@@ -29,6 +33,9 @@ public class ItemDescriptionEntity {
     private int totalCopies;
     private String imageUrl;
 
+    @OneToMany(mappedBy = "itemDescription", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<ReviewEntity> reviews = new ArrayList<>();
     
     public int getDescriptionId() {
         return descriptionId;
@@ -95,8 +102,34 @@ public class ItemDescriptionEntity {
         this.imageUrl = imageUrl;
     }
 
-    public void setBookDescription(BookDescription bookDesc)
-    {
+    public List<ReviewEntity> getReviews() {
+        return reviews;
+    }
+    
+    public void setReviews(List<ReviewEntity> reviews) {
+        this.reviews = reviews;
+    }
+    
+    public void addReview(ReviewEntity review) {
+        reviews.add(review);
+        review.setItemDescription(this);
+    }
+    
+    public void removeReview(ReviewEntity review) {
+        reviews.remove(review);
+        review.setItemDescription(null);
+    }
+    
+    // Add a method to calculate average rating
+    public Double getAverageRating() {
+        if (reviews.isEmpty()) {
+            return 0.0;
+        }
+        
+        return reviews.stream()
+            .mapToInt(ReviewEntity::getRating)
+            .average()
+            .orElse(0.0);
     }
 
     // Helper method to create description based on type
@@ -191,5 +224,9 @@ public class ItemDescriptionEntity {
         long seconds = duration.toSecondsPart();
         
         return String.format("%02d:%02d:%02d", hours, minutes, seconds);
+    }
+
+    public void setDescriptionId(Integer itemDescriptionId) {
+        this.descriptionId = itemDescriptionId;
     }
 }

@@ -54,7 +54,8 @@ public class SecurityConfiguration {
                     "/api/fines/librarian/**"
                     ).hasRole("LIBRARIAN")
                 .requestMatchers(
-                    "/api/items/borrower/**", "/api/request/borrower/**", "/api/subscribe/borrower/**"
+                    "/api/items/borrower/**", "/api/request/borrower/**", "/api/subscribe/borrower/**",
+                    "/api/reviews/borrower/**"
                     ).hasRole("BORROWER")
                 .requestMatchers("/api/user/**").authenticated()
                 .anyRequest().authenticated()

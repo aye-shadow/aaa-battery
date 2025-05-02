@@ -16,6 +16,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -171,7 +173,7 @@ public class ItemTest {
 
         // Now test the view-items endpoint
         mockMvc.perform(
-                org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/items/users/view-items")
+                get("/api/items/users/view-items")
             )
             .andExpect(status().isOk())
             .andExpect(result -> {
@@ -197,7 +199,7 @@ public class ItemTest {
     void testViewItemsEmptyList() throws Exception {
         itemRepository.deleteAll();
         mockMvc.perform(
-                org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/items/users/view-items")
+                get("/api/items/users/view-items")
             )
             .andExpect(status().isOk())
             .andExpect(result -> {
@@ -210,7 +212,7 @@ public class ItemTest {
     @WithMockUser(username = "student@nu.edu.pk", roles = {"BORROWER"})
     void testBorrowerCanViewItems() throws Exception {
         mockMvc.perform(
-                org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/items/users/view-items")
+                get("/api/items/users/view-items")
             )
             .andExpect(status().isOk());
     }
@@ -227,8 +229,7 @@ public class ItemTest {
 
         // Call the endpoint with the descriptionId
         mockMvc.perform(
-                org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                    .get("/api/items/users/view-item")
+                    get("/api/items/users/view-item")
                     .param("descriptionId", descriptionId.toString())
             )
             .andExpect(status().isOk())
@@ -270,8 +271,7 @@ public class ItemTest {
         Integer descriptionId = allItems.get(0).getDescription().getDescriptionId();
 
         mockMvc.perform(
-                org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                    .get("/api/items/users/view-item")
+                    get("/api/items/users/view-item")
                     .param("descriptionId", descriptionId.toString())
             )
             .andExpect(status().isOk())
@@ -285,8 +285,7 @@ public class ItemTest {
     @WithMockUser(username = "i220899@nu.edu.pk", roles = {"LIBRARIAN"})
     void testViewItemByDescriptionIdReturnsEmptyListForNonexistentId() throws Exception {
         mockMvc.perform(
-                org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                    .get("/api/items/users/view-item")
+                    get("/api/items/users/view-item")
                     .param("descriptionId", "999999")
             )
             .andExpect(status().isOk())
@@ -300,8 +299,7 @@ public class ItemTest {
     @WithMockUser(username = "i220899@nu.edu.pk", roles = {"LIBRARIAN"})
     void testViewItemByDescriptionIdMissingParamReturnsBadRequest() throws Exception {
         mockMvc.perform(
-                org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                    .get("/api/items/users/view-item")
+                    get("/api/items/users/view-item")
             )
             .andExpect(status().isBadRequest());
     }
@@ -332,8 +330,7 @@ public class ItemTest {
         
         // Perform the edit
         mockMvc.perform(
-                org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                    .put("/api/items/librarian/edit-item")
+                    put("/api/items/librarian/edit-item")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(editJson)
             )
@@ -345,8 +342,7 @@ public class ItemTest {
         
         // Verify the changes by getting the item
         mockMvc.perform(
-                org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                    .get("/api/items/users/view-item")
+                    get("/api/items/users/view-item")
                     .param("descriptionId", descriptionId.toString())
             )
             .andExpect(status().isOk())
@@ -385,8 +381,7 @@ public class ItemTest {
         
         // Perform the edit
         mockMvc.perform(
-                org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                    .put("/api/items/librarian/edit-item")
+                    put("/api/items/librarian/edit-item")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(editJson)
             )
@@ -402,7 +397,7 @@ public class ItemTest {
         assert updatedCopies == 5 : "Expected 5 copies after update, but got " + updatedCopies;
         assert updatedCopies > initialCopies : "Copy count did not increase";
     }
-    
+
     @Test
     @WithMockUser(username = "i220899@nu.edu.pk", roles = {"LIBRARIAN"})
     void testEditItemDecreaseCopies() throws Exception {
@@ -423,8 +418,7 @@ public class ItemTest {
         
         // Perform the edit
         mockMvc.perform(
-                org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                    .put("/api/items/librarian/edit-item")
+                    put("/api/items/librarian/edit-item")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(editJson)
             )
@@ -446,8 +440,7 @@ public class ItemTest {
         """;
         
         mockMvc.perform(
-                org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                    .put("/api/items/librarian/edit-item")
+                    put("/api/items/librarian/edit-item")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(editJson)
             )
@@ -470,8 +463,7 @@ public class ItemTest {
         """;
         
         mockMvc.perform(
-                org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                    .put("/api/items/librarian/edit-item")
+                    put("/api/items/librarian/edit-item")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(editJson)
             )
@@ -519,8 +511,7 @@ public class ItemTest {
         """.formatted(descriptionId);
         
         mockMvc.perform(
-                org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                    .put("/api/items/librarian/edit-item")
+                    put("/api/items/librarian/edit-item")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(editJson)
             )

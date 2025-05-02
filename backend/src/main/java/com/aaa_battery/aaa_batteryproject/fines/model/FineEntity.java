@@ -83,4 +83,8 @@ public class FineEntity {
     public void setPaid(Boolean paid) {
         this.paid = paid;
     }
+
+    public void setFineimposedOn(BorrowerEntity borrowerEntity) {
+        this.borrower = borrowerEntity;
+    }
 }

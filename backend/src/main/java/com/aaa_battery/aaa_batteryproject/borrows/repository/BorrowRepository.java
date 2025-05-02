@@ -11,6 +11,7 @@ import java.util.Optional;
 public interface BorrowRepository extends JpaRepository<BorrowEntity, Long> {
     List<BorrowEntity> findByBorrowerId(Long borrowerId);
     Optional<BorrowEntity> findById(Long id);
+    Optional<BorrowEntity> findById(Integer borrowId);
 }
 
 
