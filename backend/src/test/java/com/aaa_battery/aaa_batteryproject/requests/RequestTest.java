@@ -1,6 +1,7 @@
 package com.aaa_battery.aaa_batteryproject.requests;
 
 import com.aaa_battery.aaa_batteryproject.item.model.ItemType;
+import com.aaa_battery.aaa_batteryproject.requests.dto.HandleRequestDTO;
 import com.aaa_battery.aaa_batteryproject.requests.dto.RequestDTO;
 import com.aaa_battery.aaa_batteryproject.requests.model.RequestEntity;
 import com.aaa_battery.aaa_batteryproject.requests.model.RequestEntity.RequestStatus;
@@ -329,5 +330,143 @@ public class RequestTest {
 
         // Verify no service interactions
         verify(requestService, never()).getAllRequests();
+    }
+
+    @Test
+    @WithMockUser(username = "librarian@test.com", roles = {"LIBRARIAN"})
+    void handleRequest_Success() throws Exception {
+        // Arrange
+        HandleRequestDTO handleRequestDTO = new HandleRequestDTO();
+        handleRequestDTO.setId(1L);
+        handleRequestDTO.setStatus("APPROVED");
+        handleRequestDTO.setReason("Item is available");
+        
+        doNothing().when(requestService).updateRequestStatus(
+                eq(1L), 
+                eq(RequestEntity.RequestStatus.APPROVED), 
+                eq("Item is available"));
+
+        // Act & Assert
+        mockMvc.perform(post("/api/request/librarian/handle-request")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(handleRequestDTO)))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Request status updated."));
+
+        // Verify
+        verify(requestService, times(1)).updateRequestStatus(
+                eq(1L), 
+                eq(RequestEntity.RequestStatus.APPROVED), 
+                eq("Item is available"));
+    }
+
+    @Test
+    @WithMockUser(username = "librarian@test.com", roles = {"LIBRARIAN"})
+    void handleRequest_InvalidStatus() throws Exception {
+        // Arrange
+        HandleRequestDTO handleRequestDTO = new HandleRequestDTO();
+        handleRequestDTO.setId(1L);
+        handleRequestDTO.setStatus("INVALID_STATUS");
+        handleRequestDTO.setReason("Test reason");
+
+        // Act & Assert
+        mockMvc.perform(post("/api/request/librarian/handle-request")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(handleRequestDTO)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(containsString("Invalid request status. Valid values:")));
+
+        // Verify
+        verify(requestService, never()).updateRequestStatus(anyLong(), any(), anyString());
+    }
+
+    @Test
+    @WithMockUser(username = "librarian@test.com", roles = {"LIBRARIAN"})
+    void handleRequest_RequestNotFound() throws Exception {
+        // Arrange
+        HandleRequestDTO handleRequestDTO = new HandleRequestDTO();
+        handleRequestDTO.setId(999L);
+        handleRequestDTO.setStatus("REJECTED");
+        handleRequestDTO.setReason("Not available");
+        
+        doThrow(new RuntimeException("Request not found"))
+            .when(requestService).updateRequestStatus(
+                    eq(999L), 
+                    eq(RequestEntity.RequestStatus.REJECTED), 
+                    eq("Not available"));
+
+        // Act & Assert
+        mockMvc.perform(post("/api/request/librarian/handle-request")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(handleRequestDTO)))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().string("Request not found."));
+
+        // Verify
+        verify(requestService, times(1)).updateRequestStatus(
+                eq(999L), 
+                eq(RequestEntity.RequestStatus.REJECTED), 
+                eq("Not available"));
+    }
+
+    @Test
+    @WithMockUser(username = "librarian@test.com", roles = {"LIBRARIAN"})
+    void handleRequest_RuntimeException() throws Exception {
+        // Arrange
+        HandleRequestDTO handleRequestDTO = new HandleRequestDTO();
+        handleRequestDTO.setId(1L);
+        handleRequestDTO.setStatus("REJECTED");
+        handleRequestDTO.setReason("Not available");
+        
+        doThrow(new RuntimeException("Database error"))
+            .when(requestService).updateRequestStatus(
+                    eq(1L), 
+                    eq(RequestEntity.RequestStatus.REJECTED), 
+                    eq("Not available"));
+
+        // Act & Assert
+        mockMvc.perform(post("/api/request/librarian/handle-request")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(handleRequestDTO)))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().string("Failed to update the request status: Database error"));
+
+        // Verify
+        verify(requestService, times(1)).updateRequestStatus(
+                eq(1L), 
+                eq(RequestEntity.RequestStatus.REJECTED), 
+                eq("Not available"));
+    }
+
+    @Test
+    @WithMockUser(username = "borrower@test.com", roles = {"BORROWER"})
+    void handleRequest_WrongRole() throws Exception {
+        // Arrange
+        HandleRequestDTO handleRequestDTO = new HandleRequestDTO();
+        handleRequestDTO.setId(1L);
+        handleRequestDTO.setStatus("APPROVED");
+        handleRequestDTO.setReason("Item is available");
+
+        // Act & Assert - Borrower role doesn't have permission for this endpoint
+        mockMvc.perform(post("/api/request/librarian/handle-request")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(handleRequestDTO)))
+                .andExpect(status().isForbidden());
+
+        // Verify no service interactions
+        verify(requestService, never()).updateRequestStatus(anyLong(), any(), anyString());
+    }
+
+    @Test
+    @WithMockUser(username = "librarian@test.com", roles = {"LIBRARIAN"})
+    void handleRequest_MalformedJson() throws Exception {
+        // Act & Assert
+        mockMvc.perform(post("/api/request/librarian/handle-request")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{malformed json}"))
+                .andExpect(status().isBadRequest());
+
+        // Verify no service interactions
+        verify(requestService, never()).updateRequestStatus(anyLong(), any(), anyString());
     }
 }
