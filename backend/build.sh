@@ -17,8 +17,8 @@ fi
 # Generate JaCoCo report
 mvn jacoco:report
 
-# Set the Spring profile
-export SPRING_PROFILES_ACTIVE=local
+# # Set the Spring profile
+# export SPRING_PROFILES_ACTIVE=local
 
-# Run Maven spring-boot:run
-mvn spring-boot:run
+# # Run Maven spring-boot:run
+# mvn spring-boot:run

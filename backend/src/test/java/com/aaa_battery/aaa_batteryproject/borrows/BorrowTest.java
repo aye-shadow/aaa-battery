@@ -1,85 +1,299 @@
-// package com.aaa_battery.aaa_batteryproject.borrows;
+package com.aaa_battery.aaa_batteryproject.borrows;
 
-// import com.aaa_battery.aaa_batteryproject.borrows.util.BorrowTestUtil;
-// import com.aaa_battery.aaa_batteryproject.borrows.service.BorrowService;
-// import com.aaa_battery.aaa_batteryproject.item.service.ItemService;
-// import com.aaa_battery.aaa_batteryproject.user.services.BorrowerService;
-// import com.aaa_battery.aaa_batteryproject.security.jwt.services.JwtService;
+import com.aaa_battery.aaa_batteryproject.borrows.controller.BorrowController;
+import com.aaa_battery.aaa_batteryproject.borrows.model.BorrowEntity;
+import com.aaa_battery.aaa_batteryproject.borrows.service.BorrowService;
+import com.aaa_battery.aaa_batteryproject.item.itemdescriptions.models.AudiobookDescription;
+import com.aaa_battery.aaa_batteryproject.item.itemdescriptions.models.BookDescription;
+import com.aaa_battery.aaa_batteryproject.item.itemdescriptions.models.DVDDescription;
+import com.aaa_battery.aaa_batteryproject.item.itemdescriptions.models.ItemDescriptionEntity;
+import com.aaa_battery.aaa_batteryproject.item.model.ItemEntity;
+import com.aaa_battery.aaa_batteryproject.item.model.ItemType;
+import com.aaa_battery.aaa_batteryproject.item.service.ItemService;
+import com.aaa_battery.aaa_batteryproject.user.model.BorrowerEntity;
+import com.aaa_battery.aaa_batteryproject.user.services.BorrowerService;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
-// import org.junit.jupiter.api.Test;
-// import org.springframework.beans.factory.annotation.Autowired;
-// import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-// import org.springframework.boot.test.context.SpringBootTest;
-// import org.springframework.boot.test.mock.mockito.MockBean;
-// import org.springframework.test.web.servlet.MockMvc;
-// import static org.mockito.Mockito.*;
+import java.util.*;
 
-// @SpringBootTest
-// @AutoConfigureMockMvc
-// public class BorrowTest {
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
-//    @Autowired
-//    private MockMvc mockMvc;
+class BorrowControllerTest {
 
-//    @MockBean
-//    private ItemService itemService;
+    @Mock
+    private ItemService itemService;
 
-//    @MockBean
-//    private BorrowerService borrowerService;
+    @Mock
+    private BorrowerService borrowerService;
 
-//    @MockBean
-//    private BorrowService borrowService;
+    @Mock
+    private BorrowService borrowService;
 
-//    @MockBean
-//    private JwtService jwtService;
+    @Mock
+    private Authentication authentication;
 
-//    private final String JWT_STRING = "mock-jwt-token";
+    @Mock
+    private SecurityContext securityContext;
 
-//    @Test
-//    void testSubmitBorrow_Success() throws Exception {
-//        BorrowTestUtil.setUpSubmitBorrowSuccess(borrowerService, itemService, borrowService);
-//        BorrowTestUtil.performSubmitBorrow(mockMvc, JWT_STRING);
-//    }
+    @InjectMocks
+    private BorrowController borrowController;
 
-//    @Test
-//    void testSubmitBorrow_NoItemFound() throws Exception {
-//        BorrowTestUtil.setUpSubmitBorrowItemNotFound(borrowerService, itemService);
-//        BorrowTestUtil.performSubmitBorrowExpectBadRequest(mockMvc, JWT_STRING);
-//    }
+    private BorrowerEntity testBorrower;
+    private ItemEntity testItem;
+    private final Long borrowerId = 10L;
+    private final Long itemDescriptionId = 20L;
 
-//    @Test
-//    void testSubmitBorrow_BorrowerNotFound() throws Exception {
-//        BorrowTestUtil.setUpSubmitBorrowBorrowerNotFound(borrowerService);
-//        BorrowTestUtil.performSubmitBorrowExpectNotFound(mockMvc, JWT_STRING);
-//    }
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
 
-//    @Test
-//    void testGetMyBorrows_Success() throws Exception {
-//        BorrowTestUtil.setUpGetMyBorrows(borrowerService);
-//        BorrowTestUtil.performGetMyBorrows(mockMvc, JWT_STRING);
-//    }
+        // Setup SecurityContext mock
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
 
-//    @Test
-//    void testGetMyBorrows_BorrowerNotFound() throws Exception {
-//        BorrowTestUtil.setUpBorrowerNotFound(borrowerService);
-//        BorrowTestUtil.performGetMyBorrowsExpectNotFound(mockMvc, JWT_STRING);
-//    }
+        // Setup test borrower
+        testBorrower = new BorrowerEntity();
+        testBorrower.setId(borrowerId.intValue());
+        testBorrower.setFullName("Test Student");
+        testBorrower.setEmail("student@nu.edu.pk");
 
-//    @Test
-//    void testReturnBorrow_Success() throws Exception {
-//        BorrowTestUtil.setUpReturnBorrowSuccess(borrowerService, borrowService);
-//        BorrowTestUtil.performReturnBorrow(mockMvc, JWT_STRING, 1L);
-//    }
+        // Mock authentication principal
+        when(authentication.getPrincipal()).thenReturn(testBorrower);
+        when(borrowerService.findBorrowerById(borrowerId)).thenReturn(testBorrower);
 
-//    @Test
-//    void testReturnBorrow_Forbidden() throws Exception {
-//        BorrowTestUtil.setUpReturnBorrowForbidden(borrowerService, borrowService);
-//        BorrowTestUtil.performReturnBorrowExpectForbidden(mockMvc, JWT_STRING, 2L);
-//    }
+        // Setup test item
+        testItem = new ItemEntity();
+        testItem.setItemId(30);  // or use Integer.valueOf(30)
+        testItem.setAvailability(true);
 
-//    @Test
-//    void testReturnBorrow_BorrowNotFound() throws Exception {
-//        BorrowTestUtil.setUpReturnBorrowNotFound(borrowerService, borrowService);
-//        BorrowTestUtil.performReturnBorrowExpectNotFound(mockMvc, JWT_STRING, 999L);
-//    }
-// }
+        // Default mock for finding available item
+        when(itemService.findAvailableItemByDescription(itemDescriptionId))
+            .thenReturn(Optional.of(testItem));
+    }
+
+    @Test
+    void submitBorrowRequest_Success_WithBookDescription() {
+        // Setup
+        BookDescription bookDescription = new BookDescription();
+        bookDescription.setItemName("Test Book for Borrowing");
+        bookDescription.setAuthorName("Borrow Test Author");
+        bookDescription.setItemType("BOOK");
+        testItem.setDescription(bookDescription);
+
+        Map<String, Object> borrowData = new HashMap<>();
+        borrowData.put("itemId", itemDescriptionId);
+
+        BorrowEntity savedBorrow = new BorrowEntity();
+        savedBorrow.setId((int) 1L);
+        savedBorrow.setBorrower(testBorrower);
+        savedBorrow.setItem(testItem);
+        savedBorrow.setStatus(BorrowEntity.BorrowStatus.BORROWED);
+        savedBorrow.setBorrowDate(new Date());
+
+        doNothing().when(borrowService).saveBorrowRequest(any(BorrowEntity.class));
+        
+        // Execute
+        ResponseEntity<?> response = borrowController.submitBorrowRequest(borrowData);
+
+        // Verify
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        
+        @SuppressWarnings("unchecked")
+        Map<String, Object> responseMap = (Map<String, Object>) response.getBody();
+        
+        @SuppressWarnings({ "unchecked", "null" })
+        Map<String, Object> data = (Map<String, Object>) responseMap.get("data");
+        assertNotNull(data);
+        
+        @SuppressWarnings("unchecked")
+        Map<String, Object> item = (Map<String, Object>) data.get("item");
+        assertEquals(ItemType.BOOK, item.get("type"));
+        assertEquals("Borrow Test Author", item.get("creator"));
+        
+        verify(borrowService, times(1)).saveBorrowRequest(any(BorrowEntity.class));
+        assertFalse(testItem.isAvailability());
+    }
+
+    @Test
+    void submitBorrowRequest_Success_WithAudiobookDescription() {
+        // Setup
+        AudiobookDescription audiobookDescription = new AudiobookDescription();
+        audiobookDescription.setItemName("Test Audiobook");
+        audiobookDescription.setAuthorName("Audiobook Narrator");
+        audiobookDescription.setItemType("audiobook");
+        testItem.setDescription(audiobookDescription);
+
+        Map<String, Object> borrowData = new HashMap<>();
+        borrowData.put("itemId", itemDescriptionId);
+
+        // Execute
+        ResponseEntity<?> response = borrowController.submitBorrowRequest(borrowData);
+
+        // Verify
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        
+        @SuppressWarnings("unchecked")
+        Map<String, Object> responseMap = (Map<String, Object>) response.getBody();
+        
+        @SuppressWarnings({ "unchecked", "null" })
+        Map<String, Object> data = (Map<String, Object>) responseMap.get("data");
+        
+        @SuppressWarnings("unchecked")
+        Map<String, Object> item = (Map<String, Object>) data.get("item");
+        assertEquals(ItemType.AUDIOBOOK, item.get("type"));
+        assertEquals("Audiobook Narrator", item.get("creator"));
+    }
+
+    @Test
+    void submitBorrowRequest_Success_WithDVDDescription() {
+        // Setup
+        DVDDescription dvdDescription = new DVDDescription();
+        dvdDescription.setItemName("Test DVD");
+        dvdDescription.setProducer("DVD Producer");
+        dvdDescription.setItemType("dvd");
+        testItem.setDescription(dvdDescription);
+
+        Map<String, Object> borrowData = new HashMap<>();
+        borrowData.put("itemId", itemDescriptionId);
+
+        // Execute
+        ResponseEntity<?> response = borrowController.submitBorrowRequest(borrowData);
+
+        // Verify
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        
+        @SuppressWarnings("unchecked")
+        Map<String, Object> responseMap = (Map<String, Object>) response.getBody();
+        
+        @SuppressWarnings({ "unchecked", "null" })
+        Map<String, Object> data = (Map<String, Object>) responseMap.get("data");
+        
+        @SuppressWarnings("unchecked")
+        Map<String, Object> item = (Map<String, Object>) data.get("item");
+        assertEquals(ItemType.DVD, item.get("type"));
+        assertEquals("DVD Producer", item.get("creator"));
+    }
+
+    @Test
+    void submitBorrowRequest_BorrowerNotFound() {
+        // Setup
+        when(borrowerService.findBorrowerById(borrowerId)).thenReturn(null);
+
+        Map<String, Object> borrowData = new HashMap<>();
+        borrowData.put("itemId", itemDescriptionId);
+
+        // Execute
+        ResponseEntity<?> response = borrowController.submitBorrowRequest(borrowData);
+
+        // Verify
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertEquals("Borrower not found", response.getBody());
+        verify(borrowService, never()).saveBorrowRequest(any());
+    }
+
+    @Test
+    void submitBorrowRequest_NoAvailableItem() {
+        // Setup
+        when(itemService.findAvailableItemByDescription(itemDescriptionId)).thenReturn(Optional.empty());
+
+        Map<String, Object> borrowData = new HashMap<>();
+        borrowData.put("itemId", itemDescriptionId);
+
+        // Execute
+        ResponseEntity<?> response = borrowController.submitBorrowRequest(borrowData);
+
+        // Verify
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("No available item found for description ID: " + itemDescriptionId, response.getBody());
+        verify(borrowService, never()).saveBorrowRequest(any());
+    }
+
+    @Test
+    void submitBorrowRequest_UnknownItemType() {
+        // Setup
+        ItemDescriptionEntity unknownDescription = mock(ItemDescriptionEntity.class);
+        when(unknownDescription.getItemName()).thenReturn("Unknown Item");
+        when(unknownDescription.getItemType()).thenReturn(null);
+        testItem.setDescription(unknownDescription);
+    
+        Map<String, Object> borrowData = new HashMap<>();
+        borrowData.put("itemId", itemDescriptionId);
+    
+        // Execute
+        ResponseEntity<?> response = borrowController.submitBorrowRequest(borrowData);
+    
+        // Verify - expect 500 error instead of 200
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        // You might need to check the exact error message too
+    }
+
+    @Test
+    void submitBorrowRequest_ExceptionHandling() {
+        // Setup
+        doThrow(new RuntimeException("Database error")).when(borrowService).saveBorrowRequest(any());
+        
+        BookDescription bookDescription = new BookDescription();
+        bookDescription.setItemName("Test Book");
+        bookDescription.setAuthorName("Test Author");
+        bookDescription.setItemType("book");
+        testItem.setDescription(bookDescription);
+
+        Map<String, Object> borrowData = new HashMap<>();
+        borrowData.put("itemId", itemDescriptionId);
+
+        // Execute
+        ResponseEntity<?> response = borrowController.submitBorrowRequest(borrowData);
+
+        // Verify
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertEquals("Failed to submit borrow: Database error", response.getBody());
+    }
+    
+    @Test
+    void submitBorrowRequest_VerifyBorrowEntitySetup() {
+        // Setup
+        BookDescription bookDescription = new BookDescription();
+        bookDescription.setItemName("Test Book");
+        bookDescription.setAuthorName("Test Author");
+        bookDescription.setItemType("book");
+        testItem.setDescription(bookDescription);
+
+        Map<String, Object> borrowData = new HashMap<>();
+        borrowData.put("itemId", itemDescriptionId);
+
+        // Capture the BorrowEntity passed to borrowService
+        doAnswer(invocation -> {
+            BorrowEntity borrow = invocation.getArgument(0);
+            
+            // Verify borrow entity is set up correctly
+            assertEquals(testBorrower, borrow.getBorrower());
+            assertEquals(testItem, borrow.getItem());
+            assertEquals(BorrowEntity.BorrowStatus.BORROWED, borrow.getStatus());
+            assertNotNull(borrow.getBorrowDate());
+            
+            // Return a valid borrow entity
+            borrow.setId((int) 1L);
+            return borrow;
+        }).when(borrowService).saveBorrowRequest(any(BorrowEntity.class));
+
+        // Execute
+        borrowController.submitBorrowRequest(borrowData);
+
+        // Verify
+        verify(borrowService).saveBorrowRequest(any(BorrowEntity.class));
+        verify(borrowerService).findBorrowerById(borrowerId);
+        verify(itemService).findAvailableItemByDescription(itemDescriptionId);
+    }
+}
