@@ -296,4 +296,215 @@ class BorrowControllerTest {
         verify(borrowerService).findBorrowerById(borrowerId);
         verify(itemService).findAvailableItemByDescription(itemDescriptionId);
     }
+
+    @Test
+    void getMyBorrows_Success() {
+        // Setup
+        List<BorrowEntity> borrowList = new ArrayList<>();
+        BorrowEntity borrow1 = new BorrowEntity();
+        borrow1.setId(1);
+        borrow1.setBorrower(testBorrower);
+        borrow1.setItem(testItem);
+        borrowList.add(borrow1);
+        
+        testBorrower.setBorrowedItems(borrowList);
+        
+        // Execute
+        ResponseEntity<?> response = borrowController.getMyBorrows();
+        
+        // Verify
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(borrowList, response.getBody());
+        verify(borrowerService).findBorrowerById(borrowerId);
+    }
+
+    @Test
+    void getMyBorrows_BorrowerNotFound() {
+        // Setup
+        when(borrowerService.findBorrowerById(borrowerId)).thenReturn(null);
+        
+        // Execute
+        ResponseEntity<?> response = borrowController.getMyBorrows();
+        
+        // Verify
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertEquals("Borrower not found", response.getBody());
+    }
+
+    @Test
+    void getMyBorrows_EmptyList() {
+        // Setup
+        testBorrower.setBorrowedItems(Collections.emptyList());
+        
+        // Execute
+        ResponseEntity<?> response = borrowController.getMyBorrows();
+        
+        // Verify
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(Collections.emptyList(), response.getBody());
+    }
+
+    @Test
+    void getMyBorrows_ExceptionHandling() {
+        // Setup
+        when(borrowerService.findBorrowerById(borrowerId))
+            .thenThrow(new RuntimeException("Database error"));
+        
+        // Execute
+        ResponseEntity<?> response = borrowController.getMyBorrows();
+        
+        // Verify
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertEquals("Failed to retrieve borrows: Database error", response.getBody());
+    }
+
+    @SuppressWarnings("null")
+    @Test
+    void returnBorrow_Success() {
+        // Setup
+        Long borrowId = 1L;
+        BorrowEntity borrow = new BorrowEntity();
+        borrow.setId(borrowId.intValue());
+        borrow.setBorrower(testBorrower);
+        borrow.setItem(testItem);
+        borrow.setStatus(BorrowEntity.BorrowStatus.BORROWED);
+        
+        when(borrowService.findById(borrowId)).thenReturn(Optional.of(borrow));
+        doNothing().when(borrowService).saveReturn(any(BorrowEntity.class), any(ItemEntity.class));
+        
+        // Execute
+        ResponseEntity<?> response = borrowController.returnBorrow(borrowId);
+        
+        // Verify
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        
+        @SuppressWarnings("unchecked")
+        Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
+        assertEquals("Item returned successfully", responseBody.get("message"));
+        
+        // Verify item was made available
+        assertTrue(testItem.isAvailability());
+        
+        // Verify borrow was marked as returned
+        assertEquals(BorrowEntity.BorrowStatus.RETURNED, borrow.getStatus());
+        assertNotNull(borrow.getReturnedOn());
+        
+        // Verify service methods were called
+        verify(borrowService).findById(borrowId);
+        verify(borrowService).saveReturn(borrow, testItem);
+    }
+    
+    @Test
+    void returnBorrow_BorrowerNotFound() {
+        // Setup
+        Long borrowId = 1L;
+        when(borrowerService.findBorrowerById(borrowerId)).thenReturn(null);
+        
+        // Execute
+        ResponseEntity<?> response = borrowController.returnBorrow(borrowId);
+        
+        // Verify
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertEquals("Borrower not found", response.getBody());
+        
+        // Verify no save was attempted
+        verify(borrowService, never()).saveReturn(any(), any());
+    }
+    
+    @Test
+    void returnBorrow_BorrowNotFound() {
+        // Setup
+        Long borrowId = 1L;
+        when(borrowService.findById(borrowId)).thenReturn(Optional.empty());
+        
+        // Execute
+        ResponseEntity<?> response = borrowController.returnBorrow(borrowId);
+        
+        // Verify
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertEquals("Borrow not found", response.getBody());
+        
+        // Verify no save was attempted
+        verify(borrowService, never()).saveReturn(any(), any());
+    }
+    
+    @Test
+    void returnBorrow_NotOwner() {
+        // Setup
+        Long borrowId = 1L;
+        
+        // Create a different borrower for the borrow record
+        BorrowerEntity otherBorrower = new BorrowerEntity();
+        otherBorrower.setId(borrowerId.intValue() + 1); // Different ID
+        
+        // Create a borrowed item (must be marked as unavailable)
+        ItemEntity borrowedItem = new ItemEntity();
+        borrowedItem.setItemId(30);
+        borrowedItem.setAvailability(false); // Item is already borrowed, so it's unavailable
+        
+        BorrowEntity borrow = new BorrowEntity();
+        borrow.setId(borrowId.intValue());
+        borrow.setBorrower(otherBorrower);
+        borrow.setItem(borrowedItem);
+        
+        when(borrowService.findById(borrowId)).thenReturn(Optional.of(borrow));
+        
+        // Execute
+        ResponseEntity<?> response = borrowController.returnBorrow(borrowId);
+        
+        // Verify
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        assertEquals("You do not have permission to return this item", response.getBody());
+        
+        // Verify item was not modified (still unavailable)
+        assertFalse(borrowedItem.isAvailability());
+        
+        // Verify no save was attempted
+        verify(borrowService, never()).saveReturn(any(), any());
+    }
+    
+    @Test
+    void returnBorrow_ExceptionHandling() {
+        // Setup
+        Long borrowId = 1L;
+        BorrowEntity borrow = new BorrowEntity();
+        borrow.setId(borrowId.intValue());
+        borrow.setBorrower(testBorrower);
+        borrow.setItem(testItem);
+        
+        when(borrowService.findById(borrowId)).thenReturn(Optional.of(borrow));
+        doThrow(new RuntimeException("Database error")).when(borrowService).saveReturn(any(), any());
+        
+        // Execute
+        ResponseEntity<?> response = borrowController.returnBorrow(borrowId);
+        
+        // Verify
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertEquals("Failed to return borrow: Database error", response.getBody());
+    }
+    
+    @Test
+    void returnBorrow_VerifyDateUpdated() {
+        // Setup
+        Long borrowId = 1L;
+        Date beforeTest = new Date();
+        
+        BorrowEntity borrow = new BorrowEntity();
+        borrow.setId(borrowId.intValue());
+        borrow.setBorrower(testBorrower);
+        borrow.setItem(testItem);
+        borrow.setStatus(BorrowEntity.BorrowStatus.BORROWED);
+        
+        when(borrowService.findById(borrowId)).thenReturn(Optional.of(borrow));
+        
+        // Execute
+        borrowController.returnBorrow(borrowId);
+        
+        // Verify the returned date was set and is after our beforeTest time
+        assertNotNull(borrow.getReturnedOn());
+        assertFalse(borrow.getReturnedOn().before(beforeTest));
+        
+        // Verify timezone is set to UTC
+        assertEquals(BorrowEntity.BorrowStatus.RETURNED, borrow.getStatus());
+    }
 }
