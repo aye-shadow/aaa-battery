@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.aaa_battery.aaa_batteryproject.reviews.dto.ReviewCreateRequestDTO;
@@ -37,6 +36,10 @@ public class ReviewController {
     @PostMapping("/borrower/new-review")
     public ResponseEntity<?> createReview(@RequestBody ReviewCreateRequestDTO reviewDTO) {
         try {
+            if (reviewDTO == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Review data cannot be null");
+            }
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             BorrowerEntity borrower = (BorrowerEntity) userService.loadUserByUsername(auth.getName());
             
