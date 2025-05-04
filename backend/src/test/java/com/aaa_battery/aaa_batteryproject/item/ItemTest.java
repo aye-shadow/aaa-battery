@@ -3,6 +3,7 @@ package com.aaa_battery.aaa_batteryproject.item;
 import com.aaa_battery.aaa_batteryproject.item.repository.ItemRepository;
 import com.aaa_battery.aaa_batteryproject.item.service.ItemService;
 import com.aaa_battery.aaa_batteryproject.item.util.ItemUtil;
+import com.aaa_battery.aaa_batteryproject.item.model.ItemEntity;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

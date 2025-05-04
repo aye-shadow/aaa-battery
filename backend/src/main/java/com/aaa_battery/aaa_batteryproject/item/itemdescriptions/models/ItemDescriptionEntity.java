@@ -138,7 +138,12 @@ public class ItemDescriptionEntity {
     // Add a method to recalculate the average rating
     public void recalculateAverageRating(Integer newRating) {
         if (reviews.isEmpty()) {
-            this.averageRating = newRating * 1.0;
+            // Check if newRating is null before using it
+            if (newRating != null) {
+                this.averageRating = newRating * 1.0;
+            } else {
+                this.averageRating = 0.0;  // Default value when newRating is null
+            }
         } else {
             this.averageRating = reviews.stream()
                 .mapToInt(ReviewEntity::getRating)
