@@ -58,6 +58,9 @@ public class ReviewController {
             ReviewResponseDTO createdReview = reviewService.createReview(borrower, reviewDTO);
             return new ResponseEntity<>(createdReview, HttpStatus.CREATED);
             
+        } catch (jakarta.persistence.EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(e.getMessage());
         } catch (IllegalArgumentException e) {
             // Handle business logic validation exceptions with a 400 response
             if (e.getMessage().contains("already reviewed")) {
