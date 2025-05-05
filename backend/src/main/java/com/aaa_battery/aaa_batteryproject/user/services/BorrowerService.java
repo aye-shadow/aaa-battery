@@ -59,4 +59,11 @@ public class BorrowerService {
             throw new IllegalStateException("No authenticated user found");
         }
     }
+
+    public BorrowerEntity findBorrowerByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .filter(user -> user instanceof BorrowerEntity)
+                .map(user -> (BorrowerEntity) user)
+                .orElse(null);
+    }
 }

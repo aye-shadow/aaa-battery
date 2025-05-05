@@ -2,6 +2,7 @@ package com.aaa_battery.aaa_batteryproject.requests.controller;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,10 +37,15 @@ public class RequestController {
         try {
             // Retrieve the currently authenticated borrower
             BorrowerEntity borrower = borrowerService.getAuthenticatedBorrower();
-
+            
+            // Check if borrower is null - return error if it is
+            if (borrower == null) {
+                return ResponseEntity.status(500).body("Failed to submit the request");
+            }
+    
             // Save the requestEntity
             requestService.saveRequest(requestDTO, borrower);
-
+    
             // Return a success message
             return ResponseEntity.ok("Request submitted successfully");
         } catch (Exception e) {
@@ -48,23 +54,22 @@ public class RequestController {
         }
     }
 
+    // In RequestController.java
     @GetMapping("/borrower/my-requests")
-    public ResponseEntity<List<RequestEntity>> viewMyRequests() {
+    public ResponseEntity<?> viewMyRequests() {
         try {
             BorrowerEntity borrower = borrowerService.getAuthenticatedBorrower();
             if (borrower == null) {
-                logger.error("Authenticated borrower is null.");
-                return ResponseEntity.status(401).body(List.of());
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
-
             List<RequestEntity> requests = requestService.findByRequestor(borrower);
             return ResponseEntity.ok(requests);
         } catch (IllegalArgumentException e) {
-            logger.error("Invalid argument: {}", e.getMessage());
-            return ResponseEntity.badRequest().body(List.of());
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
-            logger.error("Error fetching requests: {}", e.getMessage(), e);
-            return ResponseEntity.status(500).body(List.of());
+            // Include the error message in the response to match the test expectation
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error fetching requests: " + e.getMessage());
         }
     }
 
