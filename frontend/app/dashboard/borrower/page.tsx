@@ -111,10 +111,12 @@ export default function BorrowerDashboard() {
             <h1 className="text-3xl font-bold text-gray-800">Borrower Dashboard</h1>
             <p className="text-gray-600">Welcome back{firstName ? `, ${firstName}` : ""} </p>
           </div>
+          <Link href="/profile">
           <div className="flex items-center gap-2 bg-white p-2 rounded-full border border-gray-200">
             <User className="h-6 w-6 text-[#39FF14]" />
             <span className="text-gray-800 font-medium">My Profile</span>
           </div>
+          </Link>
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

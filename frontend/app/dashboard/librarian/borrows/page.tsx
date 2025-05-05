@@ -15,6 +15,9 @@ export default function ContentRequestsManagementPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [sortBy, setSortBy] = useState("date")
   const [isLoading, setIsLoading] = useState(true)
+  const [showPopup, setShowPopup] = useState(false)
+  const [selectedRequest, setSelectedRequest] = useState(null)
+  const [actionReason, setActionReason] = useState("")
   const { apiToast } = useToast()
 
   useEffect(() => {
@@ -33,13 +36,35 @@ export default function ContentRequestsManagementPage() {
     fetchRequests()
   }, [apiToast])
 
+  const handleRowClick = (request) => {
+    setSelectedRequest(request)
+    setActionReason("")
+    setShowPopup(true)
+  }
+
+  const handleRequestAction = async (status) => {
+    if (!selectedRequest) return
+    try {
+      await requestAPI.handleContentRequest({
+        id: selectedRequest.id,
+        status,
+        reason: actionReason,
+      })
+      setShowPopup(false)
+      setRequests((prev) => prev.map(r => r.id === selectedRequest.id ? { ...r, status } : r))
+      apiToast("Updated", `Request ${status.toLowerCase()} successfully.`, "POST", "/request/librarian/handle-request", "success")
+    } catch (err) {
+      apiToast("Error", err.message, "POST", "/request/librarian/handle-request", "destructive")
+    }
+  }
+
   const filteredRequests = requests
     .filter((request) => {
       const searchLower = searchTerm.toLowerCase()
       return (
         request.itemName.toLowerCase().includes(searchLower) ||
         request.itemBy.toLowerCase().includes(searchLower) ||
-        request.requestor.fullName.toLowerCase().includes(searchLower)
+        request.requestor?.fullName?.toLowerCase().includes(searchLower)
       )
     })
     .sort((a, b) => {
@@ -47,7 +72,7 @@ export default function ContentRequestsManagementPage() {
         case "date":
           return new Date(dateArrayToString(b.requestDate)).getTime() - new Date(dateArrayToString(a.requestDate)).getTime()
         case "requestor":
-          return a.requestor.fullName.localeCompare(b.requestor.fullName)
+          return (a.requestor?.fullName || "").localeCompare(b.requestor?.fullName || "")
         case "title":
           return a.itemName.localeCompare(b.itemName)
         default:
@@ -72,6 +97,38 @@ export default function ContentRequestsManagementPage() {
 
   return (
     <div className="min-h-screen bg-gray-100">
+      {/* Popup Modal */}
+      {showPopup && selectedRequest && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-lg w-full max-w-md p-6 shadow-lg border border-[#39FF14]">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-bold text-gray-800">Handle Request</h2>
+              <button onClick={() => setShowPopup(false)} className="text-gray-500 hover:text-gray-800">×</button>
+            </div>
+            <p className="text-sm text-gray-700 mb-2">What action would you like to take for <strong>{selectedRequest.itemName}</strong>?</p>
+            <textarea
+              className="w-full h-24 p-2 text-sm border border-gray-300 rounded-md focus:ring-[#39FF14] focus:border-[#39FF14] mb-4"
+              placeholder="Reason for action..."
+              value={actionReason}
+              onChange={(e) => setActionReason(e.target.value)}
+            />
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => handleRequestAction("CANCELLED")}
+                className="px-4 py-2 rounded bg-red-100 text-red-700 hover:bg-red-200"
+              >
+                Cancel Request
+              </button>
+              <button
+                onClick={() => handleRequestAction("APPROVED")}
+                className="px-4 py-2 rounded bg-green-100 text-green-800 hover:bg-green-200"
+              >
+                Approve Request
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <header className="bg-white border-b border-[#39FF14]/30 sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -153,17 +210,29 @@ export default function ContentRequestsManagementPage() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredRequests.map((request) => (
-                  <tr key={request.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{request.itemName}</td>
+                  <tr
+                    key={request.id}
+                    onClick={() => handleRowClick(request)}          // <-- click opens modal
+                    className="cursor-pointer hover:bg-gray-50/60"  // <-- visual feedback
+                  >
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
-                      {request.requestor.fullName}
-                      <div className="text-xs text-gray-500">{request.requestor.email}</div>
+                      {request.itemName}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                      {request.requestor?.fullName || "Unknown User"}
+                      <div className="text-xs text-gray-500">
+                        {request.requestor?.email || "No email"}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800 flex items-center gap-2">
                       {getItemTypeIcon(request.itemType)} {request.itemType}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{request.itemBy}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{dateArrayToString(request.requestDate)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                      {request.itemBy}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                      {dateArrayToString(request.requestDate)}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                         <Clock className="h-3 w-3 mr-1" />
@@ -173,6 +242,7 @@ export default function ContentRequestsManagementPage() {
                   </tr>
                 ))}
               </tbody>
+
             </table>
           </div>
         ) : (

@@ -1,25 +1,57 @@
+// app/dashboard/borrower/requests/new/page.tsx
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { BookOpen, ArrowLeft, User, LogOut, CheckCircle, AlertCircle, BookPlus } from "lucide-react"
-
+import {
+  BookOpen,
+  ArrowLeft,
+  User,
+  LogOut,
+  CheckCircle,
+  AlertCircle,
+  BookPlus,
+} from "lucide-react"
 import { requestAPI } from "@/lib/api/request"
 import { useToast } from "@/hooks/use-toast"
 
 const bookCategories = [
-  "Fiction", "Non-Fiction", "Science Fiction", "Fantasy", "Mystery", "Thriller",
-  "Romance", "Historical Fiction", "Biography", "Self-Help", "Business",
-  "Science", "Technology", "Art", "Poetry", "Children's", "Young Adult", "Other",
+  "Fiction",
+  "Non-Fiction",
+  "Science Fiction",
+  "Fantasy",
+  "Mystery",
+  "Thriller",
+  "Romance",
+  "Historical Fiction",
+  "Biography",
+  "Self-Help",
+  "Business",
+  "Science",
+  "Technology",
+  "Art",
+  "Poetry",
+  "Children's",
+  "Young Adult",
+  "Other",
 ]
 
-const contentTypes = ["Book", "Audiobook", "DVD", "E-Book", "Journal", "Magazine", "Other"]
+const contentTypes = [
+  "Book",
+  "Audiobook",
+  "DVD",
+  "E-Book",
+  "Journal",
+  "Magazine",
+  "Other",
+]
 
 export default function NewBookRequestPage() {
   const router = useRouter()
   const { apiToast } = useToast()
 
+  const [requests, setRequests] = useState<any[]>([])
   const [title, setTitle] = useState("")
   const [author, setAuthor] = useState("")
   const [contentType, setContentType] = useState("Book")
@@ -29,76 +61,109 @@ export default function NewBookRequestPage() {
   const [description, setDescription] = useState("")
   const [reason, setReason] = useState("")
   const [urgency, setUrgency] = useState("normal")
-
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitSuccess, setSubmitSuccess] = useState(false)
   const [submitError, setSubmitError] = useState("")
-
   const [errors, setErrors] = useState({
-    title: "", author: "", category: "", description: "",
+    title: "",
+    author: "",
+    category: "",
+    description: "",
   })
+
+  // ─── fetch already‐made requests ───────────────────────────────
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const data = await requestAPI.getUserRequests()
+        setRequests(data)
+      } catch (e) {
+        console.error("Failed to load your requests:", e)
+      }
+    }
+    load()
+  }, [])
 
   const validateForm = () => {
     let valid = true
     const newErrors = { title: "", author: "", category: "", description: "" }
-
-    if (!title.trim()) { newErrors.title = "Title is required"; valid = false }
-    if (!author.trim()) { newErrors.author = "Author/Creator is required"; valid = false }
-    if (!category) { newErrors.category = "Category is required"; valid = false }
-    if (!description.trim()) { newErrors.description = "Description is required"; valid = false }
-
-    setErrors(newErrors)
-
-    if (!valid) {
-      apiToast("Validation Error", "Please fill in all required fields.", "POST", "/api/requests", "destructive")
+    if (!title.trim()) {
+      newErrors.title = "Title is required"
+      valid = false
     }
-
+    if (!author.trim()) {
+      newErrors.author = "Author/Creator is required"
+      valid = false
+    }
+    if (!category) {
+      newErrors.category = "Category is required"
+      valid = false
+    }
+    if (!description.trim()) {
+      newErrors.description = "Description is required"
+      valid = false
+    }
+    setErrors(newErrors)
+    if (!valid) {
+      apiToast(
+        "Validation Error",
+        "Please fill in all required fields.",
+        "POST",
+        "/request/borrower/new-request",
+        "destructive"
+      )
+    }
     return valid
   }
 
   const handleSubmit = async (e: any) => {
-    e.preventDefault();
-  
-    if (!validateForm()) {
-      return;
-    }
-  
-    setIsSubmitting(true);
-    setSubmitError("");
-  
+    e.preventDefault()
+    if (!validateForm()) return
+    setIsSubmitting(true)
+    setSubmitError("")
+
     try {
-      let typeLower = contentType.toLowerCase();
-      if (typeLower !== "book" && typeLower !== "audiobook" && typeLower !== "dvd") {
-        typeLower = "book"; // Default to book if something else
+      let typeLower = contentType.toLowerCase()
+      if (!["book", "audiobook", "dvd"].includes(typeLower)) {
+        typeLower = "book"
       }
-  
       const requestData = {
         itemType: typeLower,
         itemName: title,
         itemBy: author,
         notes: reason || "",
-      };
-  
-      apiToast("Processing Request", "Submitting your content request...", "POST", "/request/borrower/new-request", "info");
-  
-      await requestAPI.submitContentRequest(requestData);
-  
-      apiToast("Request Submitted", "Your content request has been submitted successfully.", "POST", "/request/borrower/new-request", "success");
-  
-      setIsSubmitting(false);
-      setSubmitSuccess(true);
-  
-      setTimeout(() => {
-        router.push("/dashboard/borrower");
-      }, 3000);
-    } catch (error) {
-      console.error("Error submitting request:", error);
-      apiToast("Request Failed", "Failed to submit your content request. Please try again.", "POST", "/request/borrower/new-request", "destructive");
-      setIsSubmitting(false);
-      setSubmitError("An error occurred while submitting your request. Please try again.");
+      }
+      apiToast(
+        "Processing Request",
+        "Submitting your content request…",
+        "POST",
+        "/request/borrower/new-request",
+        "info"
+      )
+      await requestAPI.submitContentRequest(requestData)
+      apiToast(
+        "Request Submitted",
+        "Your content request has been submitted successfully.",
+        "POST",
+        "/request/borrower/new-request",
+        "success"
+      )
+      setSubmitSuccess(true)
+      setIsSubmitting(false)
+      setTimeout(() => router.push("/dashboard/borrower"), 3000)
+    } catch (err) {
+      console.error("Error submitting request:", err)
+      apiToast(
+        "Request Failed",
+        "Failed to submit your content request. Please try again.",
+        "POST",
+        "/request/borrower/new-request",
+        "destructive"
+      )
+      setIsSubmitting(false)
+      setSubmitError("An error occurred while submitting your request. Please try again.")
     }
   }
-  
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -109,7 +174,10 @@ export default function NewBookRequestPage() {
             <span className="text-xl font-bold text-gray-800">LibraryPro</span>
           </div>
           <div className="flex items-center gap-3">
-            <Link href="/dashboard/borrower" className="flex items-center gap-2 text-gray-600 hover:text-gray-800">
+            <Link
+              href="/dashboard/borrower"
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
+            >
               <ArrowLeft className="h-5 w-5" />
               <span>Back to Dashboard</span>
             </Link>
@@ -117,7 +185,10 @@ export default function NewBookRequestPage() {
               <User className="h-5 w-5 text-[#39FF14]" />
               <span className="text-gray-800 font-medium">John Doe</span>
             </div>
-            <Link href="/auth" className="flex items-center gap-1 text-gray-600 hover:text-gray-800">
+            <Link
+              href="/auth"
+              className="flex items-center gap-1 text-gray-600 hover:text-gray-800"
+            >
               <LogOut className="h-5 w-5" />
             </Link>
           </div>
@@ -125,17 +196,78 @@ export default function NewBookRequestPage() {
       </header>
 
       <div className="container mx-auto px-4 py-8">
+        {/* ─── Your past requests ─────────────────────────────────────────── */}
+        <div className="bg-white rounded-lg shadow-sm border border-[#39FF14]/30 mb-8 overflow-x-auto max-h-64">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50 sticky top-0">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  ID
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Type
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Name
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  By
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Requested
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {requests.map((r) => {
+                const [y, m, d, hh, mm, ss] = r.requestDate
+                const date = new Date(y, m - 1, d, hh, mm, ss)
+                const statusClass =
+                  r.status === "APPROVED"
+                    ? "bg-green-100 text-green-800"
+                    : r.status === "CANCELLED"
+                    ? "bg-red-100 text-red-800"
+                    : "bg-yellow-100 text-yellow-800"
+                return (
+                  <tr key={r.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 text-sm text-gray-900">{r.id}</td>
+                    <td className="px-6 py-4 text-sm text-gray-900">{r.itemType}</td>
+                    <td className="px-6 py-4 text-sm text-gray-900">{r.itemName}</td>
+                    <td className="px-6 py-4 text-sm text-gray-900">{r.itemBy}</td>
+                    <td className="px-6 py-4 text-sm text-gray-900">
+                      {date.toLocaleDateString()}{" "}
+                      {date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClass}`}
+                      >
+                        {r.status}
+                      </span>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+
         {submitSuccess ? (
           <div className="bg-white p-8 rounded-lg shadow-sm border border-[#39FF14]/30 text-center">
             <CheckCircle className="h-16 w-16 text-[#39FF14] mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-gray-800 mb-4">Request Submitted Successfully!</h1>
+            <h1 className="text-2xl font-bold text-gray-800 mb-4">
+              Request Submitted Successfully!
+            </h1>
             <p className="text-gray-600 mb-6">
-              Thank you for your request. Our librarians will review it and notify you when a decision has been made.
-              You will be redirected to your dashboard shortly.
+              Thank you for your request. Our librarians will review it and notify you when a
+              decision has been made. You will be redirected to your dashboard shortly.
             </p>
             <Link
               href="/dashboard/borrower"
-              className="inline-flex items-center justify-center rounded-md bg-[#39FF14] px-4 py-2 text-sm font-medium text-black shadow transition-colors hover:bg-[#39FF14]/90 focus:outline-none focus:ring-2 focus:ring-[#39FF14]"
+              className="inline-flex items-center justify-center rounded-md bg-[#39FF14] px-4 py-2 text-sm font-medium text-black shadow hover:bg-[#39FF14]/90"
             >
               Go to Dashboard
             </Link>
@@ -149,8 +281,9 @@ export default function NewBookRequestPage() {
               </div>
 
               <p className="text-gray-600 mb-6">
-                Can't find what you're looking for in our catalog? Submit a request for new content, and our librarians
-                will review it. Please provide as much information as possible to help us locate the item.
+                Can't find what you're looking for in our catalog? Submit a request for new content,
+                and our librarians will review it. Please provide as much information as possible to
+                help us locate the item.
               </p>
 
               {submitError && (
@@ -160,7 +293,7 @@ export default function NewBookRequestPage() {
                 </div>
               )}
 
-              <form onSubmit={handleSubmit}>
+<form onSubmit={handleSubmit}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                   {/* Title */}
                   <div className="space-y-2">

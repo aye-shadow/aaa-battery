@@ -141,20 +141,27 @@ export const authAPI = {
   },
   
 
-  changePassword: async (userId: number, currentPassword: string, newPassword: string) => {
-    const response = await fetch(`${API_BASE_URL}/auth/users/${userId}/password`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ currentPassword, newPassword }),
-    })
+  changePassword: async (oldPassword: string, newPassword: string): Promise<string> => {
+    const form = new FormData()
+    form.append("oldPassword", oldPassword)
+    form.append("newPassword", newPassword)
 
-    if (!response.ok) {
-      throw new Error("Change password failed")
+    const res = await fetch(
+      `${API_BASE_URL}/user/change-password`,
+      {
+        method: "POST",
+        credentials: "include",
+        body: form,
+      }
+    )
+
+    const text = await res.text()
+    if (!res.ok) {
+      console.error("❌ changePassword failed:", text)
+      throw new Error(text || "Failed to change password")
     }
 
-    return await response.json()
+    return text
   },
 
   getUserProfile: async (userId: number) => {
@@ -187,6 +194,19 @@ export const authAPI = {
 
     return await response.json()
   },
+
+  getCurrentUser: async () => {
+    const response = await fetch(`${API_BASE_URL}/user/me`, {
+      method: "GET",
+      credentials: "include",
+    })
+    if (!response.ok) {
+      const txt = await response.text()
+      console.error("Fetch current user failed:", txt)
+      throw new Error("Failed to fetch current user")
+    }
+    return response.json()
+  }
 }
 
 // **important**: so you can `import authAPI from "@/lib/api/auth"`

@@ -1,39 +1,66 @@
 // lib/api/fines.ts
-// Fines management API endpoints
+import { API_BASE_URL } from "./axios-instance"
 
-import api from "./axios-instance"
-
-// API endpoints for fines management
 export const finesAPI = {
-  // Get all fines - librarian only
-  getAllFines: async (filters?: any) => {
-    return api.get("/fines", { params: filters })
+  /** Fetch all fines for the current borrower */
+  getMyFines: async () => {
+    const res = await fetch(
+      `${API_BASE_URL}/fines/borrower/my-fines`,
+      { method: "GET", credentials: "include" }
+    )
+    if (!res.ok) {
+      const text = await res.text()
+      console.error("❌ Failed to fetch fines:", text)
+      throw new Error(`Failed to fetch fines: ${text}`)
+    }
+    return await res.json()  // returns array of { fineId, amount, paid, issuedDate, itemId, itemName, borrowDate, returnDate, daysLate }
   },
 
-  // Get fine by ID - works for both librarian and borrower
-  getFineById: async (fineId: number) => {
-    return api.get(`/fines/${fineId}`)
-  },
+  getAllFines: async (params: any) => {
+    // Convert params object to query string
+    const queryString = new URLSearchParams(params).toString();
+  
+    const res = await fetch(
+      `${API_BASE_URL}/fines/librarian/view-fines?${queryString}`, // Append query string to the URL
+      {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include", // Ensure credentials are sent with the request
+      }
+    );
+    const resj=await res.json()
+    console.log(await resj)
+    if (!res.ok) {
+      const text = await res.text();
+      console.error("❌ Failed to fetch fines:", text);
+      throw new Error(`Failed to fetch fines: ${text}`);
+    }
 
-  // Get user fines - borrower only
-  getUserFines: async (userId: number) => {
-    return api.get(`/fines/user/${userId}`)
+    return resj; // Return the response as JSON
   },
+  
 
-  // Pay fine - borrower only
+  /** Pay a single fine */
   payFine: async (fineId: number, paymentData: any) => {
-    return api.post(`/fines/${fineId}/pay`, paymentData)
+    const res = await fetch(
+      `${API_BASE_URL}/fines/${fineId}/pay`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(paymentData),
+      }
+    )
+    if (!res.ok) {
+      const text = await res.text()
+      console.error("❌ Failed to pay fine:", text)
+      throw new Error(`Failed to pay fine: ${text}`)
+    }
+    return await res.json()
   },
 
-  // Waive fine - librarian only
-  waiveFine: async (fineId: number, reason: string) => {
-    return api.put(`/fines/${fineId}/waive`, { reason })
-  },
-
-  // Get payment history - librarian only
-  getPaymentHistory: async (filters?: any) => {
-    return api.get("/fines/payments", { params: filters })
+  /** Existing: fetch payment history */
+  getPaymentHistory: async (params: any) => {
+    // your existing implementation...
   },
 }
-
-export default finesAPI

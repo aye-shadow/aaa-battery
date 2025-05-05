@@ -65,6 +65,7 @@ export const catalogAPI = {
 
   // ✅ Correct individual item fetch + availableCopies counting
   getItemById: async (type: string, id: number) => {
+    console.log("meow")
     const response = await fetch(`${API_BASE_URL}/items/users/view-item?descriptionId=${id}`)
     if (!response.ok) {
       throw new Error("Failed to fetch individual catalog item")
@@ -97,61 +98,151 @@ export const catalogAPI = {
       duration: desc.duration || null,
     }
   },
-  addItem: async (formData: any) => {
+addItem: async (formData: any) => {
     const payload: any = {
-      type: formData.type,
+      type: formData.type.toUpperCase(),
       itemName: formData.itemName,
       genre: formData.genre,
       blurb: formData.blurb,
-      date: formData.date ? `${formData.date}T00:00:00` : "",
       totalCopies: Number(formData.totalCopies),
       imageUrl: formData.imageUrl,
+    };
+    // always include date if set
+    if (formData.date) {
+      payload.date = `${formData.date}T00:00:00`;
     }
-  
+    if (formData.type === "book") {
+      payload.authorName = formData.authorName;
+      payload.publisher  = formData.publisher;
+    } else if (formData.type === "audiobook") {
+      payload.authorName = formData.authorName;
+      payload.publisher  = formData.publisher;
+      payload.narrator   = formData.narratorName;
+      payload.duration   = formData.duration;
+    } else if (formData.type === "dvd") {
+      payload.director = formData.director;
+      payload.producer = formData.producer;
+      payload.duration = formData.duration;
+    }
+    console.log("📦 [catalogAPI] addItem payload →", payload);
+    const response = await fetch(`${API_BASE_URL}/items/librarian/add-item`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`Failed to add item: ${errText}`);
+    }
+    return await response.text();
+  },
+
+  updateItem: async (formData: any) => {
+    const payload: any = {
+      descriptionId: formData.descriptionId,
+      type:          formData.type.toUpperCase(),
+      itemName:      formData.itemName,
+      genre:         formData.genre,
+      blurb:         formData.blurb,
+      date:          formData.date ? `${formData.date}T00:00:00` : undefined,
+      totalCopies:   Number(formData.totalCopies),
+      imageUrl:      formData.imageUrl,
+    }
     if (formData.type === "book") {
       payload.authorName = formData.authorName
+      payload.publisher  = formData.publisher
     } else if (formData.type === "audiobook") {
-      payload.narratorName = formData.narratorName
-      payload.duration = formData.duration
-    } else if (formData.type === "dvd") {
+      payload.authorName = formData.authorName
+      payload.publisher  = formData.publisher
+      payload.narrator   = formData.narratorName
+      payload.duration   = formData.duration
+    } else {
       payload.director = formData.director
       payload.producer = formData.producer
       payload.duration = formData.duration
     }
-  
-    console.log("🚀 Payload being sent to server:", payload)
-  
-    const response = await fetch(`${API_BASE_URL}/items/librarian/add-item`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+
+    console.log("🛠 [catalogAPI] updateItem payload →", payload)
+    const res = await fetch(`${API_BASE_URL}/items/librarian/edit-item`, {
+      method:      "PUT",
+      headers:     { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify(payload),
+      body:        JSON.stringify(payload),
     })
-  
-    if (!response.ok) {
-      const errorText = await response.text()
-      throw new Error(`Failed to add item: ${errorText}`)
+    if (!res.ok) {
+      const txt = await res.text()
+      throw new Error(`Failed to update item: ${txt}`)
     }
-  
-    // ✅ Wait for the server response text
-    const text = await response.text()
-  
-    console.log("✅ Item added successfully:", text)
-  
-    // ✅ Don't throw, just return the success text
-    return text
-  },
-  
-
-  updateItem: async (itemId: number, itemData: any) => {
-    return api.put(`/catalog/${itemId}`, itemData)
+    return await res.text()
   },
 
-  deleteItem: async (itemId: number) => {
-    return api.delete(`/catalog/${itemId}`)
+  updateDescription: async (
+    descriptionId: number,
+    payload: {
+      itemName: string
+      blurb: string
+      genre: string
+      totalCopies: number
+      imageUrl?: string
+      authorName?: string
+      publisher?: string
+      narrator?: string
+      duration?: string
+      director?: string
+      producer?: string
+    }
+  ): Promise<void> => {
+    const body = JSON.stringify({ descriptionId, ...payload })
+    const res = await fetch(
+      `${API_BASE_URL}/items/librarian/edit-item`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body,
+      }
+    )
+    if (!res.ok) {
+      const err = await res.text()
+      throw new Error(`Update failed: ${err}`)
+    }
   },
+
+  getDescriptionById: async (descriptionId: number): Promise<{
+    descriptionId: number
+    itemType: string
+    itemName: string
+    genre: string
+    blurb: string
+    date: number[]
+    totalCopies: number
+    imageUrl: string
+    averageRating?: number
+    authorName?: string
+    publisher?: string
+    narrator?: string
+    duration?: string
+    director?: string
+    producer?: string
+  } | null> => {
+    const res = await fetch(
+      `${API_BASE_URL}/items/users/view-item?descriptionId=${descriptionId}`,
+      { credentials: "include" }
+    )
+    if (!res.ok) {
+      console.error("getDescriptionById failed:", await res.text())
+      throw new Error("Failed to load description")
+    }
+    const arr = await res.json()
+    console.log("he: ", arr)
+    if (!Array.isArray(arr) || arr.length === 0) {
+      return null
+    }
+    // each element has `{ itemId, availability, description: { … } }`
+    return arr[0].description
+  },
+  
 }
 
 export default catalogAPI

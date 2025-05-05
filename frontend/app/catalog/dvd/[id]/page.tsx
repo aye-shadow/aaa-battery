@@ -19,21 +19,24 @@ import {
   Users,
 } from "lucide-react"
 import { catalogAPI } from "@/lib/api/catalog"
+import { borrowAPI } from "@/lib/api/borrow"         // ← ADDED
 
 export default function DvdDetailPage() {
   const params = useParams()
   const dvdId = Number(params.id)
   const [userRole, setUserRole] = useState<"borrower" | "librarian" | null>(null)
   const [dvd, setDvd] = useState<any>(null)
+  const [reviews, setReviews] = useState<any[]>([]) // ← ADDED
 
   useEffect(() => {
-    const role = localStorage.getItem("userRole") || "librarian"
+    const role = (localStorage.getItem("userRole") as "borrower" | "librarian") || "librarian"
     setUserRole(role)
 
     const fetchDvd = async () => {
       try {
         const item = await catalogAPI.getItemById("dvd", dvdId)
         if (item) {
+          // keep your dummy enrichments
           setDvd({
             ...item,
             runtime: "142 min",
@@ -42,6 +45,7 @@ export default function DvdDetailPage() {
             subtitles: ["English", "Spanish", "French"],
             stars: ["Dummy Actor 1", "Dummy Actor 2", "Dummy Actor 3"],
             overallRating: 4.8,
+            // NOTE: we will ignore this dummy `reviews` below and render real ones
             reviews: [
               { user: "Sample Reviewer 1", rating: 5, comment: "Incredible movie!" },
               { user: "Sample Reviewer 2", rating: 4, comment: "Loved the acting and direction." },
@@ -51,6 +55,10 @@ export default function DvdDetailPage() {
               { user: "Jane Smith", borrowDate: "2024-02-15", returnDate: null },
             ],
           })
+
+          // ←—— FETCH REAL REVIEWS
+          const real = await borrowAPI.getReviews(item.id)
+          setReviews(real)
         }
       } catch (error) {
         console.error(error)
@@ -75,15 +83,15 @@ export default function DvdDetailPage() {
             <div className="flex flex-col md:flex-row gap-8">
               {/* DVD Cover */}
               <div className="flex-shrink-0">
-              <img
-                        src={dvd.coverUrl}
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement
-                          target.src ="/placeholder.svg?height=200&width=150"
-                        }}
-                        alt={`Cover of ${dvd.title}`}
-                        className="h-48 object-cover rounded"
-                      />
+                <img
+                  src={dvd.coverUrl}
+                  onError={(e) => {
+                    const target = e.currentTarget as HTMLImageElement
+                    target.src = "/placeholder.svg?height=200&width=150"
+                  }}
+                  alt={`Cover of ${dvd.title}`}
+                  className="h-48 object-cover rounded"
+                />
 
                 <div
                   className={`mt-4 text-center py-2 rounded-md ${
@@ -95,27 +103,31 @@ export default function DvdDetailPage() {
                 <div className="text-center text-gray-500 text-sm mt-2">{availableCopiesText}</div>
 
                 <div className="mt-4 space-y-2">
-                {userRole === "borrower" && dvd.available && (
-                  <Link 
-                    href={{
-                      pathname: `/borrow/dvd/${dvd.id}`,
-                      query: {
-                        title: dvd.title,
-                        coverUrl: dvd.coverUrl,
-                        creator: dvd.creator,
-                        type: dvd.type,
-                      }
-                    }}
-                    className="w-full inline-flex justify-center rounded-md bg-[#39FF14] px-4 py-2 text-sm font-medium text-black shadow hover:bg-[#39FF14]/90"
-                  >
-                    Borrow DVD
-                  </Link>
+                  {userRole === "borrower" && dvd.available && (
+                    <Link
+                      href={{
+                        pathname: `/borrow/dvd/${dvd.id}`,
+                        query: {
+                          title: dvd.title,
+                          coverUrl: dvd.coverUrl,
+                          creator: dvd.creator,
+                          type: dvd.type,
+                        },
+                      }}
+                      className="w-full inline-flex justify-center rounded-md bg-[#39FF14] px-4 py-2 text-sm font-medium text-black shadow hover:bg-[#39FF14]/90"
+                    >
+                      Borrow DVD
+                    </Link>
                   )}
                   {userRole === "librarian" && (
                     <>
-                      <button className="w-full inline-flex items-center justify-center rounded-md bg-[#39FF14] px-4 py-2 text-sm font-medium text-black shadow hover:bg-[#39FF14]/90">
-                        <Edit className="h-4 w-4 mr-2" /> Edit DVD
-                      </button>
+                      <Link
+                        href={`/catalog/update/${dvd.id}`}
+                        className="w-full inline-flex items-center justify-center rounded-md bg-[#39FF14] px-4 py-2 text-sm font-medium text-black shadow hover:bg-[#39FF14]/90"
+                      >
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit DVD
+                      </Link>
                       <button className="w-full inline-flex items-center justify-center rounded-md bg-red-100 px-4 py-2 text-sm font-medium text-red-600 shadow hover:bg-red-200">
                         <Trash2 className="h-4 w-4 mr-2" /> Delete DVD
                       </button>
@@ -168,7 +180,9 @@ export default function DvdDetailPage() {
                   <h2 className="text-xl font-bold text-gray-800 mb-2">Subtitles</h2>
                   <div className="flex flex-wrap gap-2">
                     {dvd.subtitles.map((sub: string, index: number) => (
-                      <span key={index} className="bg-gray-100 px-3 py-1 rounded-full text-gray-700">{sub}</span>
+                      <span key={index} className="bg-gray-100 px-3 py-1 rounded-full text-gray-700">
+                        {sub}
+                      </span>
                     ))}
                   </div>
                 </div>
@@ -183,28 +197,30 @@ export default function DvdDetailPage() {
                 <div>
                   <h2 className="text-xl font-bold text-gray-800 mb-4">Reviews</h2>
                   <div className="space-y-4">
-                    {dvd.reviews.map((review: any, index: number) => (
-                      <div key={index} className="bg-gray-50 p-4 rounded-md">
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="font-medium text-gray-800">{review.user}</span>
-                          <div className="flex text-yellow-400">
-                            {[...Array(review.rating)].map((_, i) => (
-                              <Star key={i} className="h-4 w-4 fill-current" />
-                            ))}
+                    {reviews.length === 0 ? (
+                      <p className="text-gray-500">No reviews yet</p>
+                    ) : (
+                      reviews.map((r, i) => (
+                        <div key={i} className="bg-gray-50 p-4 rounded-md">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="font-medium text-gray-800">{r.reviewerName}</span>
+                            <div className="flex text-yellow-400">
+                              {[...Array(r.rating)].map((_, j) => (
+                                <Star key={j} className="h-4 w-4 fill-current" />
+                              ))}
+                            </div>
                           </div>
+                          <p className="text-gray-700">{r.comment}</p>
                         </div>
-                        <p className="text-gray-700">{review.comment}</p>
-                      </div>
-                    ))}
+                      ))
+                    )}
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Borrowing History */}
-            {userRole === "librarian" && (
-              <BorrowHistoryTable history={dvd.borrowHistory} />
-            )}
+            {userRole === "librarian" && <BorrowHistoryTable history={dvd.borrowHistory} />}
           </div>
         </div>
       </div>
@@ -229,17 +245,29 @@ function BorrowHistoryTable({ history }: { history: any[] }) {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Borrow Date</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Return Date</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                User
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Borrow Date
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Return Date
+              </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {history.map((h: any, index: number) => (
-              <tr key={index}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{h.user}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{h.borrowDate}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{h.returnDate || "Not returned"}</td>
+            {history.map((h: any, idx: number) => (
+              <tr key={idx}>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  {h.user}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {h.borrowDate}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {h.returnDate || "Not returned"}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -264,7 +292,9 @@ function Header({ userRole }: { userRole: string }) {
           </Link>
           <div className="flex items-center gap-2 bg-white p-2 rounded-full border border-gray-200">
             <User className="h-5 w-5 text-[#39FF14]" />
-            <span className="text-gray-800 font-medium">{userRole === "borrower" ? "John Doe" : "Admin"}</span>
+            <span className="text-gray-800 font-medium">
+              {userRole === "borrower" ? "John Doe" : "Admin"}
+            </span>
           </div>
           <Link href="/auth" className="flex items-center gap-1 text-gray-600 hover:text-gray-800">
             <LogOut className="h-5 w-5" />

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useParams } from "next/navigation"
 import { catalogAPI } from "@/lib/api/catalog"
+import { borrowAPI } from "@/lib/api/borrow"
 import {
   BookOpen,
   ArrowLeft,
@@ -14,6 +15,8 @@ import {
   BookMarked,
   Edit,
   Trash2,
+  Star,
+  StarHalf,
 } from "lucide-react"
 
 export default function BookDetailPage() {
@@ -22,6 +25,7 @@ export default function BookDetailPage() {
   const [book, setBook] = useState<any>(null)
   const [availableCopies, setAvailableCopies] = useState(0)
   const [userRole, setUserRole] = useState<"borrower" | "librarian" | null>(null)
+  const [reviews, setReviews] = useState<any[]>([])
 
   useEffect(() => {
     const role = localStorage.getItem("userRole") as "borrower" | "librarian" | null
@@ -29,18 +33,22 @@ export default function BookDetailPage() {
   }, [])
 
   useEffect(() => {
-    async function fetchBook() {
+    async function fetchBookAndReviews() {
       try {
         const data = await catalogAPI.getItemById("book", bookId)
         if (data) {
           setBook(data)
           setAvailableCopies(data.availableCopies || 0)
+
+          // Fetch reviews by bookId
+          const reviewsData = await borrowAPI.getReviews(bookId)
+          setReviews(reviewsData)
         }
       } catch (error) {
-        console.error("Failed to fetch book:", error)
+        console.error("Failed to fetch book or reviews:", error)
       }
     }
-    fetchBook()
+    fetchBookAndReviews()
   }, [bookId])
 
   if (!book) {
@@ -63,14 +71,13 @@ export default function BookDetailPage() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Header */}
+      {/* HEADER */}
       <header className="bg-white border-b border-[#39FF14]/30 sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <BookOpen className="h-7 w-7 text-[#39FF14]" />
             <span className="text-xl font-bold text-gray-800">LibraryPro</span>
           </div>
-
           <div className="flex items-center gap-3">
             <Link href="/catalog" className="flex items-center gap-2 text-gray-600 hover:text-gray-800">
               <ArrowLeft className="h-5 w-5" />
@@ -78,7 +85,9 @@ export default function BookDetailPage() {
             </Link>
             <div className="flex items-center gap-2 bg-white p-2 rounded-full border border-gray-200">
               <User className="h-5 w-5 text-[#39FF14]" />
-              <span className="text-gray-800 font-medium">{userRole ? (userRole === "borrower" ? "John Doe" : "Admin") : ""}</span>
+              <span className="text-gray-800 font-medium">
+                {userRole === "borrower" ? "John Doe" : "Admin"}
+              </span>
             </div>
             <Link href="/auth" className="flex items-center gap-1 text-gray-600 hover:text-gray-800">
               <LogOut className="h-5 w-5" />
@@ -93,36 +102,29 @@ export default function BookDetailPage() {
             <div className="flex flex-col md:flex-row gap-8">
               {/* Book Cover */}
               <div className="flex-shrink-0">
-              <img
-                        src={book.coverUrl}
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement
-                          target.src ="/placeholder.svg?height=200&width=150"
-                        }}
-                        alt={`Cover of ${book.title}`}
-                        className="h-48 object-cover rounded"
-                      />
-
-                {/* Availability Badge */}
+                <img
+                  src={book.coverUrl}
+                  onError={(e) => {
+                    const target = e.currentTarget as HTMLImageElement
+                    target.src = "/placeholder.svg?height=200&width=150"
+                  }}
+                  alt={`Cover of ${book.title}`}
+                  className="h-48 object-cover rounded"
+                />
                 <div
-                  className={`mt-4 text-center py-2 rounded-md ${availableCopies > 0 ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
+                  className={`mt-4 text-center py-2 rounded-md ${
+                    availableCopies > 0 ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                  }`}
                 >
                   {availableCopies > 0 ? `Available (${availableCopies} copies)` : "Unavailable"}
                 </div>
-
-                {/* Action Buttons */}
                 <div className="mt-4 space-y-2">
                   {userRole === "borrower" && availableCopies > 0 && (
                     <Link
-                    href={{
-                      pathname: `/borrow/book/${book.id}`,
-                      query: {
-                        title: book.title,
-                        coverUrl: book.coverUrl,
-                        creator: book.creator,
-                        type: book.type,
-                      }
-                    }}
+                      href={{
+                        pathname: `/borrow/book/${book.id}`,
+                        query: { title: book.title, coverUrl: book.coverUrl, creator: book.creator, type: book.type },
+                      }}
                       className="w-full inline-flex justify-center rounded-md bg-[#39FF14] px-4 py-2 text-sm font-medium text-black shadow hover:bg-[#39FF14]/90"
                     >
                       Borrow Book
@@ -130,10 +132,13 @@ export default function BookDetailPage() {
                   )}
                   {userRole === "librarian" && (
                     <>
-                      <button className="w-full inline-flex items-center justify-center rounded-md bg-[#39FF14] px-4 py-2 text-sm font-medium text-black shadow hover:bg-[#39FF14]/90">
+                      <Link
+                        href={`/catalog/update/${book.id}`}
+                        className="w-full inline-flex items-center justify-center rounded-md bg-[#39FF14] px-4 py-2 text-sm font-medium text-black shadow hover:bg-[#39FF14]/90"
+                      >
                         <Edit className="h-4 w-4 mr-2" />
                         Edit Book
-                      </button>
+                      </Link>
                       <button className="w-full inline-flex items-center justify-center rounded-md bg-red-100 px-4 py-2 text-sm font-medium text-red-600 shadow hover:bg-red-200">
                         <Trash2 className="h-4 w-4 mr-2" />
                         Delete Book
@@ -148,7 +153,6 @@ export default function BookDetailPage() {
                 <h1 className="text-3xl font-bold text-gray-800 mb-2">{book.title}</h1>
                 <p className="text-xl text-gray-600 mb-4">by {book.creator}</p>
 
-                {/* Static Metadata Example */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   <InfoRow Icon={Calendar} label="Published" value={book.year || "Unknown"} />
                   <InfoRow Icon={Tag} label="Genre" value={book.genre || "Unknown"} />
@@ -158,7 +162,6 @@ export default function BookDetailPage() {
                   <InfoRow Icon={Tag} label="ISBN" value="978-0000000000" />
                 </div>
 
-                {/* Book Description */}
                 <div className="mb-6">
                   <h2 className="text-xl font-bold text-gray-800 mb-2">Description</h2>
                   <p className="text-gray-700">{book.description}</p>
@@ -167,11 +170,30 @@ export default function BookDetailPage() {
                 {/* Reviews Section */}
                 <div>
                   <h2 className="text-xl font-bold text-gray-800 mb-4">Reviews</h2>
-                  <p className="text-gray-500">No reviews yet</p>
+                  {reviews.length === 0 ? (
+                    <p className="text-gray-500">No reviews yet</p>
+                  ) : (
+                    reviews.map((review) => (
+                      <div key={review.reviewId} className="mb-4">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="font-medium text-gray-800">{review.reviewerName}</span>
+                          <div className="flex text-yellow-400">
+                            {[...Array(review.rating)].map((_, i) => (
+                              <Star key={i} className="h-4 w-4 fill-current" />
+                            ))}
+                            {review.rating % 1 !== 0 && <StarHalf className="h-4 w-4 fill-current" />}
+                          </div>
+                        </div>
+                        <p className="text-gray-700">{review.comment}</p>
+                        <p className="text-xs text-gray-500">
+                          {new Date(review.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             </div>
-
           </div>
         </div>
       </div>
@@ -183,7 +205,9 @@ function InfoRow({ Icon, label, value }: { Icon: any; label: string; value: stri
   return (
     <div className="flex items-center gap-2">
       <Icon className="h-5 w-5 text-[#39FF14]" />
-      <span className="text-gray-700">{label}: {value}</span>
+      <span className="text-gray-700">
+        {label}: {value}
+      </span>
     </div>
   )
 }

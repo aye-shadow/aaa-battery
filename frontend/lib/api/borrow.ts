@@ -98,6 +98,86 @@ export const borrowAPI = {
   getBorrowHistory: async (filters?: any) => {
     return api.get("/borrows/history", { params: filters })
   },
+
+// ─────────────────────────────────────────────────────────────────────
+  // Reviews operations — now fire-and-forget
+  // ─────────────────────────────────────────────────────────────────────
+
+  getMyReviews: async () => {
+    const res = await fetch(
+      `${API_BASE_URL}/reviews/borrower/my-reviews`,
+      { method: "GET", credentials: "include" }
+    );
+    if (!res.ok) throw new Error("Failed to fetch reviews");
+    return res.json();
+  },
+
+  addReview: async (
+    borrowId: number,
+    itemId: number,
+    rating: number,
+    comment: string
+  ) => {
+    const res = await fetch(`${API_BASE_URL}/reviews/borrower/new-review`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ borrowId, itemId, rating, comment }),
+    });
+    console.log("hehe: ",res.text())
+    if (!res.ok) throw new Error("Failed to add review");
+    // don't await res.json()
+  },
+
+  updateReview: async (
+    reviewId: number,
+    rating: number,
+    comment: string
+  ) => {
+    const res = await fetch(
+      `${API_BASE_URL}/reviews/borrower/update-review/${reviewId}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ rating, comment }),
+      }
+    );
+    if (!res.ok) throw new Error("Failed to update review");
+    // no res.json()
+  },
+
+  deleteReview: async (reviewId: number) => {
+    const res = await fetch(
+      `${API_BASE_URL}/reviews/borrower/delete-review/${reviewId}`,
+      {
+        method: "DELETE",
+        credentials: "include",
+      }
+    );
+    if (!res.ok) throw new Error("Failed to delete review");
+    // nothing returned
+  },
+
+  getReviews: async (bookId: number) => {
+    const res = await fetch(
+      `${API_BASE_URL}/reviews/users/all-reviews/${bookId}`,  // Pass bookId directly
+      { method: "GET", credentials: "include" }
+    );
+  
+    if (!res.ok) throw new Error("Failed to fetch reviews");
+  
+    const result = await res.json();  // Wait for the response to resolve as JSON
+    console.log("Reviews Data:", result);
+    return result;
+  },
+  
+  
+
+
+  
 }
+
+
 
 export default borrowAPI

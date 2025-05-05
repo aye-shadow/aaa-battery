@@ -307,11 +307,11 @@ export default function CatalogPage() {
                         onError={(e) => {
                           const target = e.target as HTMLImageElement
                           target.src =
-                            item.type === "book"
+                            item.type === "BOOK"
                               ? "https://placehold.co/300x300?text=Book&font=roboto"
-                              : item.type === "audiobook"
+                              : item.type === "AUDIOBOOK"
                               ? "https://placehold.co/300x300?text=Audiobook&font=roboto"
-                              : item.type === "dvd"
+                              : item.type === "DVD"
                               ? "https://placehold.co/300x300?text=DVD&font=roboto"
                               : "https://placehold.co/300x300?text=Other&font=roboto"
                         }}
@@ -354,13 +354,13 @@ export default function CatalogPage() {
                       </div>
                       <div className="mt-auto flex gap-2">
                         <Link
-                          href={`/catalog/${item.type}/${item.id}`}
+                          href={`/catalog/${item.type.toLowerCase()}/${item.id}`}
                           className="flex-1 inline-flex justify-center rounded-md bg-[#39FF14] px-4 py-2 text-sm font-medium text-black shadow transition-colors hover:bg-[#39FF14]/90 focus:outline-none focus:ring-2 focus:ring-[#39FF14]"
                           onClick={() => {
                             // Show API notification for viewing item details
                             toast({
                               title: "API Request",
-                              description: `GET /api/catalog/${item.type}/${item.id} - Fetching item details`,
+                              description: `GET /api/catalog/${item.type.toLowerCase()}/${item.id} - Fetching item details`,
                               variant: "default",
                             })
                           }}
@@ -370,13 +370,13 @@ export default function CatalogPage() {
 
                         {userRole === "borrower" && item.available && (
                           <Link
-                            href={`/borrow/${item.type}/${item.id}`}
+                            href={`/borrow/${item.type.toLowerCase()}/${item.id}`}
                             className="inline-flex justify-center rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 shadow transition-colors hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300"
                             onClick={() => {
                               // Show API notification for borrow request
                               toast({
                                 title: "API Request",
-                                description: `GET /api/borrow/${item.type}/${item.id} - Preparing borrow request`,
+                                description: `GET /api/borrow/${item.type.toLowerCase()}/${item.id} - Preparing borrow request`,
                                 variant: "default",
                               })
                             }}
@@ -392,7 +392,7 @@ export default function CatalogPage() {
                               // Show API notification for edit request
                               toast({
                                 title: "API Request",
-                                description: `GET /api/catalog/${item.type}/${item.id}/edit - Fetching item for editing`,
+                                description: `GET /api/catalog/${item.type.toLowerCase()}/${item.id}/edit - Fetching item for editing`,
                                 variant: "default",
                               })
                             }}
@@ -418,11 +418,11 @@ export default function CatalogPage() {
                       onError={(e) => {
                         const target = e.target as HTMLImageElement
                         target.src =
-                          item.type === "book"
+                          item.type === "BOOK"
                             ? "https://placehold.co/100x100?text=Book&font=roboto"
-                            : item.type === "audiobook"
+                            : item.type === "AUDIOBOOK"
                             ? "https://placehold.co/100x100?text=Audiobook&font=roboto"
-                            : item.type === "dvd"
+                            : item.type === "DVD"
                             ? "https://placehold.co/100x100?text=DVD&font=roboto"
                             : "https://placehold.co/100x100?text=Other&font=roboto"
                       }}
@@ -463,13 +463,13 @@ export default function CatalogPage() {
                         <p className="text-sm text-gray-600 mb-4">{item.description}</p>
                         <div className="flex gap-2">
                           <Link
-                            href={`/catalog/${item.type}/${item.id}`}
+                            href={`/catalog/${item.type.toLowerCase()}/${item.id}`}
                             className="inline-flex justify-center rounded-md bg-[#39FF14] px-4 py-2 text-sm font-medium text-black shadow transition-colors hover:bg-[#39FF14]/90 focus:outline-none focus:ring-2 focus:ring-[#39FF14]"
                             onClick={() => {
                               // Show API notification for viewing item details
                               toast({
                                 title: "API Request",
-                                description: `GET /api/catalog/${item.type}/${item.id} - Fetching item details`,
+                                description: `GET /api/catalog/${item.type.toLowerCase()}/${item.id} - Fetching item details`,
                                 variant: "default",
                               })
                             }}
@@ -479,13 +479,13 @@ export default function CatalogPage() {
 
                           {userRole === "borrower" && item.available && (
                             <Link
-                              href={`/borrow/${item.type}/${item.id}`}
+                              href={`/borrow/${item.type.toLowerCase()}/${item.id}`}
                               className="inline-flex justify-center rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 shadow transition-colors hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300"
                               onClick={() => {
                                 // Show API notification for borrow request
                                 toast({
                                   title: "API Request",
-                                  description: `GET /api/borrow/${item.type}/${item.id} - Preparing borrow request`,
+                                  description: `GET /api/catalog/${item.type.toLowerCase()}/${item.id} - Fetching item details`,
                                   variant: "default",
                                 })
                               }}
@@ -501,7 +501,7 @@ export default function CatalogPage() {
                                 // Show API notification for edit request
                                 toast({
                                   title: "API Request",
-                                  description: `GET /api/catalog/${item.type}/${item.id}/edit - Fetching item for editing`,
+                                  description: `GET /api/catalog/${item.type.toLowerCase()}/${item.id}/edit - Fetching item for editing`,
                                   variant: "default",
                                 })
                               }}

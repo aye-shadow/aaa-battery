@@ -9,7 +9,7 @@ export default function LandingPage() {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <BookOpen className="h-7 w-7 text-[#39FF14]" />
-            <span className="text-xl font-bold text-gray-800">LibraryPro</span>
+            <span className="text-xl font-bold text-gray-800">AAA Battery</span>
           </div>
           <nav className="hidden md:flex items-center gap-8">
             <a href="#features" className="text-gray-600 hover:text-gray-800">
