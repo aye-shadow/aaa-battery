@@ -69,8 +69,10 @@ public class FineController {
                 
                 // Calculate days passed since return date
                 Date returnDate = fine.getBorrow().getReturnDate();
-                if (returnDate != null) {
-                    Date currentDate = new Date();
+                Date currentDate = new Date();
+                if (returnDate == null || returnDate.after(currentDate)) {
+                    dto.setDaysLate(0L);
+                } else {
                     long diffInMillies = currentDate.getTime() - returnDate.getTime();
                     long daysPassed = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
                     dto.setDaysLate(daysPassed > 0 ? daysPassed : 0);
